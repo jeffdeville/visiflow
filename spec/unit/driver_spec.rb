@@ -68,23 +68,23 @@ describe Visiflow::Driver do
   describe "#determine_next_step" do
     describe ":no_matter_what exists" do
       context "and another step also exist" do
-        let(:crappy_steps) {
-          [{:raising_part_one_of_two => {:no_matter_what => :does_not_matter, :this_breaks => :everything } }]
-        }
+        let(:crappy_steps) do
+          [{ raising_part_one_of_two: { no_matter_what: :does_not_matter, this_breaks: :everything } }]
+        end
 
         it "should raise when it realizes that a no_matter_what step exists w/ any other step result" do
           lambda { TestWorkflow.new(crappy_steps) }.should raise_error
         end
       end
       context "when no other step exists" do
-        let(:workflow) { TestWorkflow.new(nil, :part_one_of_two )}
+        let(:workflow) { TestWorkflow.new(nil, :part_one_of_two)}
         act(:result) { workflow.run; }
         it "runs the no_matter_what step" do
           workflow.execution_path.should include(:part_two_of_two)
         end
       end
       context "even if an exception occurs" do
-        let(:workflow) { TestWorkflow.new(nil, :raising_part_one_of_two )}
+        let(:workflow) { TestWorkflow.new(nil, :raising_part_one_of_two)}
         act(:result) { workflow.run; }
         it "runs the no_matter_what step" do
           workflow.execution_path.should include(:part_two_of_two)
@@ -140,8 +140,3 @@ describe Visiflow::Driver do
     # end
   # end
 end
-
-
-
-
-

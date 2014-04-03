@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'visiflow/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "Visiflow - "
+  spec.name          = "visiflow"
   spec.version       = Visiflow::VERSION
   spec.authors       = ["Jeff Deville"]
   spec.email         = ["jeffdeville@gmail.com"]

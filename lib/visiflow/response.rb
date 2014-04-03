@@ -20,7 +20,7 @@ module Visiflow
     def method_missing(method, *args)
       method_string = method.to_s
       if /\?$/.match(method_string) # check if it's a [STATUS]? call
-        @status == method_string.gsub("?","").to_sym
+        @status == method_string.gsub("?", "").to_sym
       end
     end
   end

@@ -3,26 +3,25 @@ class TestWorkflow
   attr_reader :before_step1_called, :after_step1_called, :execution_path, :log_results, :ex
   attr_accessor :state
 
-  def initialize(steps=nil, state=nil)
+  def initialize(steps = nil, state = nil)
     default_steps = [
-      {:step1 => {:success => :step2,
-                  :failure => :step1_fail_handler}
+      { step1: { success: :step2,
+                 failure: :step1_fail_handler }
       },
 
-      {:step2 => {:success => :step3 } },
-
+      { step2: { success: :step3 } },
 
       :step3,
 
-      {:step_that_fails => {
-        :failure => :fail_handler}},
+      { step_that_fails: {
+        failure: :fail_handler } },
 
       :step_that_raises,
 
       :fail_handler,
 
-      { :part_one_of_two => {:no_matter_what => :part_two_of_two} },
-      { :raising_part_one_of_two => {:no_matter_what => :part_two_of_two } },
+      { part_one_of_two: { no_matter_what: :part_two_of_two } },
+      { raising_part_one_of_two: { no_matter_what: :part_two_of_two } },
 
       :part_two_of_two,
       :some_other_fail_handler,
@@ -56,12 +55,12 @@ class TestWorkflow
   end
 
   def step_that_raises
-    raise StandardError, "I raised because I am not well-behaved."
+    fail StandardError, "I raised because I am not well-behaved."
   end
 
   def fail_handler
     @execution_path << :fail_handler
-    Visiflow::Response.success #failure("something broke")
+    Visiflow::Response.success # failure("something broke")
   end
 
   def sleep(state)
@@ -69,7 +68,6 @@ class TestWorkflow
   end
 
   def wakeup
-
   end
 
   def persist_state(state)
@@ -81,7 +79,7 @@ class TestWorkflow
   end
 
   def log_result(name, result, timing)
-    @log_results << {:name => name.to_s, :result => result.status, :message => result.message, :timing => timing}
+    @log_results << { name: name.to_s, result: result.status, message: result.message, timing: timing }
   end
 
   def log_error(name, ex)

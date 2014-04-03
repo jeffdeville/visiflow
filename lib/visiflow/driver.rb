@@ -2,35 +2,34 @@
 module Visiflow::Driver
   attr_accessor :processed_steps
 
-  def initialize(steps=nil)
+  def initialize(steps = nil)
     steps ||= Array(self.steps)
-    # processed_steps = Array(self.steps)
     self.processed_steps = Visiflow::Step.create_steps(steps)
     choose_first_step processed_steps.keys.first
   end
 
   def before_step(step)
     method_name = "before_#{step}"
-    return self.send(method_name) if respond_to? method_name
+    return send(method_name) if respond_to? method_name
     true
   end
 
   def after_step(step, result)
     method_name = "after_#{step}"
-    return self.send(method_name, result) if respond_to? method_name
+    return send(method_name, result) if respond_to? method_name
     result
   end
 
   # This shold be configurable
   def around_step(step_name)
-    return yield
+    yield
   end
 
   def execute_step(step)
     begin
       around_step_result = around_step(step.name) do
         if before_step(step.name)
-          result = self.send(step.name)
+          result = send(step.name)
           # Can the after state cancel the flow?  if so...  I haven't done that yet.
           after_step(step.name, result)
         end
@@ -46,7 +45,7 @@ module Visiflow::Driver
     @next_step = processed_steps[override_step] unless override_step.nil?
     while true
       break if @next_step.nil?
-      self.persist_state @next_step.name
+      persist_state @next_step.name
 
       result = execute_step @next_step
       @next_step = determine_next_step(result)
@@ -56,7 +55,7 @@ module Visiflow::Driver
   # just used to verify that your workflow will handle all of its defined branches
   def all_steps_defined?
     undefined_steps = processed_steps.values.map{|s| [s.name] + s.step_map.values }.flatten.uniq.
-      find_all{|step| !(self.respond_to?(step) || step.to_s.start_with?("notify_of")) }
+      select{|step| !(self.respond_to?(step) || step.to_s.start_with?("notify_of")) }
     # Rails.logger.error(pp undefined_steps)
     return true if undefined_steps.empty?
     false
@@ -69,7 +68,7 @@ module Visiflow::Driver
     run
   end
 
-  def roofy_the_workflow(response, run_at=nil)
+  def roofy_the_workflow(response, run_at = nil)
     delay_until(response, run_at)
     Visiflow::Response.stop
   end
@@ -94,23 +93,23 @@ module Visiflow::Driver
       else
         msg = "#{@current_step.name} returned: #{response.status}, but we can't find that outcome's step"
         p msg
-        raise ArgumentError, msg
+        fail ArgumentError, msg
     end
     next_step_symbol ? processed_steps[next_step_symbol] : nil
   end
 
   # Todo: remove this steps_array - it's here because once @steps is made, I don't
   # know which step was defined first because ruby 1.8 is pissy like that.
-  def choose_first_step(first_step=nil)
-    last_run_step = self.state #load_state
+  def choose_first_step(first_step = nil)
+    last_run_step = state # load_state
     @next_step = processed_steps[last_run_step ? last_run_step : first_step]
   end
 
-  def delay_until(response, run_at=nil)
+  def delay_until(response, run_at = nil)
     step_after_awakening = @next_step[response.status]
-    self.persist_state(step_after_awakening)
+    persist_state(step_after_awakening)
     if run_at
-      options = {:run_at => run_at}
+      options = { run_at: run_at }
       delay(options).reload_and_continue
     else
       delay.reload_and_continue
@@ -121,5 +120,4 @@ module Visiflow::Driver
   def delay(options = {})
     self
   end
-
 end

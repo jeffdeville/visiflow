@@ -9,7 +9,7 @@ class Visiflow::Step
 
       # Verify biz rules
       if @step_map[:no_matter_what] && @step_map.length > 1
-        raise ArgumentError, "When specifying a no_matter_what step, only that step can be referenced"
+        fail ArgumentError, "When specifying a no_matter_what step, only that step can be referenced"
       end
     else
       @name = step
@@ -27,8 +27,8 @@ class Visiflow::Step
 
   def self.create_steps(steps_array)
     steps = Array(steps_array).map{|s| Visiflow::Step.new(s) }
-    steps = steps.inject({}){|acc, step| acc[step.name] = step; acc; }
-    return steps
+    steps = steps.reduce({}){|acc, step| acc[step.name] = step; acc; }
+    steps
   end
 
   def <=>(other)
