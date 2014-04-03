@@ -9,8 +9,8 @@ describe Visiflow::Response do
 
   it "should set a status w/ a message" do
     resp = Visiflow::Response.success("yeehaw")
-    resp.status.should == :success
-    resp.message.should == "yeehaw"
+    resp.status.should eq :success
+    resp.message.should eq "yeehaw"
   end
 
   it "should know if a status is currently set" do

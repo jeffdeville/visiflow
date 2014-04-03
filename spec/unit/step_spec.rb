@@ -20,18 +20,6 @@ describe Visiflow::Step do
     end
   end
 
-  describe "<=>" do
-    let(:step1) { Visiflow::Step.new :step1 }
-    let(:step1_hash) { Visiflow::Step.new(step1: { success: :complete }) }
-    let(:step2) { Visiflow::Step.new :step2 }
-    let(:step2_hash) { Visiflow::Step.new(step2: { success: :complete })}
-
-    specify { (step1 <=> step1_hash).should == 0 }
-    specify { (step1 <=> :step1).should == 0 }
-    specify { (step1 <=> step2).should_not == 0 }
-    specify { (step1 <=> step2_hash).should_not == 0 }
-  end
-
   describe "self.create_steps" do
     context "when empty" do
       specify { Visiflow::Step.create_steps([]).should == {} }
@@ -43,7 +31,7 @@ describe Visiflow::Step do
          { step2: { success: :step3 } },
          :step3,
          :step1_fail_handler
-        ]
+         ]
       end
       context "and first step is a Symbol" do
         let(:first_step) { :step1 }

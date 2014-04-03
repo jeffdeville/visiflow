@@ -1,24 +1,26 @@
 class Visiflow::Step
-  include Comparable
-
   attr_accessor :name, :step_map
-  def initialize(step)
-    if step.is_a? Hash
-      @name = step.keys.first
-      @step_map = step[@name]
+
+  def initialize(step_definition)
+    if step_definition.is_a? Hash
+      if step_definition.size > 1
+        fail ArgumentError, "When specifying a step, use only one key-value pair"
+      end
+
+      self.name, self.step_map = step_definition.first
 
       # Verify biz rules
-      if @step_map[:no_matter_what] && @step_map.length > 1
+      if step_map[:no_matter_what] && step_map.size > 1
         fail ArgumentError, "When specifying a no_matter_what step, only that step can be referenced"
       end
     else
-      @name = step
-      @step_map = {}
+      self.name = step_definition.to_sym
+      self.step_map = {}
     end
   end
 
   def [](result)
-    @step_map[result]
+    step_map[result]
   end
 
   def to_s
@@ -26,19 +28,8 @@ class Visiflow::Step
   end
 
   def self.create_steps(steps_array)
-    steps = Array(steps_array).map{|s| Visiflow::Step.new(s) }
-    steps = steps.reduce({}){|acc, step| acc[step.name] = step; acc; }
-    steps
-  end
-
-  def <=>(other)
-    case other
-      when Symbol
-         @name == other ? 0 : -1
-      when Visiflow::Step
-        @name == other.name ? 0 : -1
-      else
-        -1
-    end
+    Array(steps_array)
+    .map{|s| Visiflow::Step.new(s) }
+    .each_with_object({}){|step, acc| acc[step.name] = step }
   end
 end
