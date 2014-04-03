@@ -34,8 +34,8 @@ describe Visiflow::Step do
 
   describe "self.create_steps" do
     context "when empty" do
-      specify { Visiflow::Step.create_steps([]).should == [{}] }
-      specify { Visiflow::Step.create_steps(nil).should == [{}] }
+      specify { Visiflow::Step.create_steps([]).should == {} }
+      specify { Visiflow::Step.create_steps(nil).should == {} }
     end
     context "when steps exist" do
       let(:step_input) {
@@ -49,8 +49,7 @@ describe Visiflow::Step do
         let(:first_step) { :step1 }
         before { step_input }
         act(:return_val) { Visiflow::Step.create_steps(step_input) }
-        specify { return_val.length.should == 4 }
-        specify { return_val.class.should == Hash }
+        specify { return_val.keys.should == [first_step, :step2, :step3, :step1_fail_handler] }
       end
       context "and first step is a Hash" do
         let(:first_step) do

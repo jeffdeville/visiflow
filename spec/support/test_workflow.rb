@@ -6,9 +6,13 @@ class TestWorkflow
   def initialize(steps=nil, state=nil)
     default_steps = [
       {:step1 => {:success => :step2,
-            :failure => :step1_fail_handler}},
+                  :failure => :step1_fail_handler}
+      },
+
       {:step2 => {:success => :step3 } },
-       :step3,
+
+
+      :step3,
 
       {:step_that_fails => {
         :failure => :fail_handler}},

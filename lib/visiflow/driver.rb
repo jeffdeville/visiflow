@@ -5,8 +5,8 @@ module Visiflow::Driver
   def initialize(steps=nil)
     steps ||= Array(self.steps)
     # processed_steps = Array(self.steps)
-    @processed_steps = Visiflow::Step.create_steps(steps)
-    choose_first_step @processed_steps.keys.first
+    self.processed_steps = Visiflow::Step.create_steps(steps)
+    choose_first_step processed_steps.keys.first
   end
 
   def before_step(step)
@@ -55,7 +55,7 @@ module Visiflow::Driver
 
   # just used to verify that your workflow will handle all of its defined branches
   def all_steps_defined?
-    undefined_steps = @processed_steps.values.map{|s| [s.name] + s.step_map.values }.flatten.uniq.
+    undefined_steps = processed_steps.values.map{|s| [s.name] + s.step_map.values }.flatten.uniq.
       find_all{|step| !(self.respond_to?(step) || step.to_s.start_with?("notify_of")) }
     # Rails.logger.error(pp undefined_steps)
     return true if undefined_steps.empty?
@@ -96,21 +96,20 @@ module Visiflow::Driver
         p msg
         raise ArgumentError, msg
     end
-    next_step_symbol ? @processed_steps[next_step_symbol] : nil
+    next_step_symbol ? processed_steps[next_step_symbol] : nil
   end
 
   # Todo: remove this steps_array - it's here because once @steps is made, I don't
   # know which step was defined first because ruby 1.8 is pissy like that.
   def choose_first_step(first_step=nil)
     last_run_step = self.state #load_state
-    @next_step = last_run_step ? @steps[last_run_step] : first_step
+    @next_step = processed_steps[last_run_step ? last_run_step : first_step]
   end
 
   def delay_until(response, run_at=nil)
     step_after_awakening = @next_step[response.status]
     self.persist_state(step_after_awakening)
     if run_at
-      # require 'pry'; binding.pry
       options = {:run_at => run_at}
       delay(options).reload_and_continue
     else
