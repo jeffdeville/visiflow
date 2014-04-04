@@ -9,12 +9,16 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Jeff Deville"]
   spec.email         = ["jeffdeville@gmail.com"]
   spec.summary       = %q{Workflows in Ruby.}
-  spec.description   = %q{ Simple, no state-machine over-engineering. Unopinionated.}
+  spec.description   = %q{
+    Simple, no state-machine over-engineering. Unopinionated.
+  }
   spec.homepage      = ""
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
+  # rubocop:disable RegexpLiteral
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  # rubocop:disable RegexpLiteral
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 

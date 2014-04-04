@@ -3,16 +3,7 @@ class Visiflow::Step
 
   def initialize(step_definition)
     if step_definition.is_a? Hash
-      if step_definition.size > 1
-        fail ArgumentError, "When specifying a step, use only one key-value pair"
-      end
-
-      self.name, self.step_map = step_definition.first
-
-      # Verify biz rules
-      if step_map[:no_matter_what] && step_map.size > 1
-        fail ArgumentError, "When specifying a no_matter_what step, only that step can be referenced"
-      end
+      build_from_hash step_definition
     else
       self.name = step_definition.to_sym
       self.step_map = {}
@@ -31,5 +22,22 @@ class Visiflow::Step
     Array(steps_array)
     .map{|s| Visiflow::Step.new(s) }
     .each_with_object({}){|step, acc| acc[step.name] = step }
+  end
+
+  private
+
+  def build_from_hash(step_definition)
+    if step_definition.size > 1
+      # rubocop:disable LineLength
+      fail ArgumentError, "Use only one key-value pair when specifying a step"
+    end
+
+    self.name, self.step_map = step_definition.first
+
+    # Verify biz rules
+    if step_map[:no_matter_what] && step_map.size > 1
+      # rubocop:disable LineLength
+      fail ArgumentError, "When specifying a no_matter_what step, only that step can be referenced"
+    end
   end
 end

@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Visiflow::Response do
   it "should set a status w/ no message" do
     resp = Visiflow::Response.success
-    resp.status.should == :success
+    resp.status.should eq :success
     resp.message.should be_nil
   end
 

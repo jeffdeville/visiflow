@@ -1,8 +1,10 @@
 class TestWorkflow
   include Visiflow::Driver
-  attr_reader :before_step1_called, :after_step1_called, :execution_path, :log_results, :ex
+  attr_reader :before_step1_called, :after_step1_called,
+    :execution_path, :log_results, :ex
   attr_accessor :state
 
+  # rubocop:disable MethodLength
   def initialize(steps = nil)
     default_steps = [
       { step1: { success: :step2,
@@ -24,7 +26,7 @@ class TestWorkflow
       { raising_part_one_of_two: { no_matter_what: :part_two_of_two } },
 
       :part_two_of_two,
-      :some_other_fail_handler,
+      :some_other_fail_handler
     ]
     super(steps || default_steps)
     @execution_path = []
@@ -39,7 +41,7 @@ class TestWorkflow
     @after_step1_called = true
     result
   end
-
+  # rubocop:disable LineLength
   %w(step1 step2 step3 part_one_of_two part_two_of_two raising_part_one_of_two).each do |name|
     class_eval do
       define_method name do
@@ -64,7 +66,8 @@ class TestWorkflow
   end
 
   def log_result(name, result, timing)
-    @log_results << { name: name.to_s, result: result.status, message: result.message, timing: timing }
+    @log_results << { name: name.to_s, result: result.status,
+                      message: result.message, timing: timing }
   end
 
   def log_error(name, ex)

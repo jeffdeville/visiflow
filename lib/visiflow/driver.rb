@@ -3,7 +3,7 @@ module Visiflow::Driver
   attr_accessor :processed_steps
 
   def initialize(steps = nil)
-    steps ||= Array(self.steps)
+    steps ||= Array(self.class.steps)
     self.processed_steps = Visiflow::Step.create_steps(steps)
   end
 
@@ -31,7 +31,8 @@ module Visiflow::Driver
       end
     end
   rescue => e # TODO: give the response the error
-    return Visiflow::Response.failure("Uncaught exception! \n #{e.message}\n#{e.backtrace.join("\n")}")
+    return Visiflow::Response.failure(
+      "Uncaught exception! \n #{e.message}\n#{e.backtrace.join("\n")}")
   end
 
   def run(starting_step = processed_steps.keys.first)
@@ -44,33 +45,43 @@ module Visiflow::Driver
   end
 
   def all_steps_defined?
-    undefined_steps = processed_steps.values.map{|s| [s.name] + s.step_map.values }.flatten.uniq.
-      select{|step| !respond_to?(step) }
+    undefined_steps = processed_steps.values.map do |s|
+      [s.name] + s.step_map.values
+    end
+    undefined_steps = undefined_steps.flatten.uniq
+      .select{|step| !respond_to?(step) }
     !undefined_steps.empty?
-  end
-
-  def stop
-    Response.Stop
   end
 
   private
 
   # There are a few 'special' response statuses, and they behave like this:
-  #   :success - If success is returned, and there is nothing to go on to, the process will simply stop.
-  #               Assumption is that we are at the end of the flow.
-  #   :no_matter_what - This response has to be by itself. It's there so that come hell or high water, the next step following this
-  #                       one is executed. It's used when you have several things that should all run, but you don't want them in
-  #                       the same method because they are separate concerns.
+  #   :success - If success is returned, and there is nothing to go on to,
+  #      the process will simply stop. Assumption is that we are at the end
+  #      of the flow.
+  #   :no_matter_what - This response has to be by itself. It's there so
+  #      that come hell or high water, the next step following this
+  #      one is executed. It's used when you have several things that should
+  #      all run, but you don't want them in the same method because they
+  #      are separate concerns.
+  # rubocop:disable CyclomaticComplexity
+  # rubocop:disable MethodLength
   def determine_next_step(response, current_step)
-    next_step_symbol = case
-    when current_step[:no_matter_what] then current_step[:no_matter_what]
-    when current_step[response.status] then current_step[response.status]
-    when current_step[response.status].nil? && (response.success? || response.failure?) then nil
-    else
-      msg = "#{current_step.name} returned: #{response.status}, but we can't find that outcome's step"
-      p msg
-      fail ArgumentError, msg
-    end
+    next_step_symbol =
+      case
+      when current_step[:no_matter_what]
+        current_step[:no_matter_what]
+      when current_step[response.status]
+        current_step[response.status]
+      when current_step[response.status].nil? &&
+        (response.success? || response.failure?)
+        nil
+      else
+        # rubocop:disable LineLength
+        msg = "#{current_step.name} returned: #{response.status}, but we can't find that outcome's step"
+        p msg
+        fail ArgumentError, msg
+      end
     next_step_symbol ? processed_steps[next_step_symbol] : nil
   end
 end

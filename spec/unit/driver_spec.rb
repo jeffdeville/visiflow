@@ -21,12 +21,16 @@ describe Visiflow::Driver do
     let(:workflow) { TestWorkflow.new }
 
     context "when a after_step is defined" do
-      act(:response) { workflow.after_step(:step1, Visiflow::Response.success) }
+      act(:response) do
+        workflow.after_step(:step1, Visiflow::Response.success)
+      end
       specify { workflow.after_step1_called.should be_true }
     end
 
     context "when a after_step is NOT defined" do
-      act(:response) { workflow.after_step(:step2, Visiflow::Response.success) }
+      act(:response) do
+        workflow.after_step(:step2, Visiflow::Response.success)
+      end
       it "should return true to prevent canceling the workflow" do
         response.should be_true
       end
@@ -66,11 +70,14 @@ describe Visiflow::Driver do
     describe ":no_matter_what exists" do
       context "and another step also exist" do
         let(:crappy_steps) do
-          [{ raising_part_one_of_two: { no_matter_what: :does_not_matter, this_breaks: :everything } }]
+          [{ raising_part_one_of_two: {
+            no_matter_what: :does_not_matter,
+            this_breaks: :everything }
+          }]
         end
-
+        # rubocop:disable LineLength
         it "should raise when it realizes that a no_matter_what step exists w/ any other step result" do
-          lambda { TestWorkflow.new(crappy_steps) }.should raise_error
+          -> { TestWorkflow.new(crappy_steps) }.should raise_error
         end
       end
       context "when no other step exists" do

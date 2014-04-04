@@ -10,7 +10,9 @@ describe Visiflow::Step do
       specify { step.step_map.length.should == 0 }
     end
     context "when initializing an intermediate state (indicated by a hash)" do
-      let(:step_input) { { step1: { success: :complete, failure: :fail_hard } } }
+      let(:step_input) do
+        { step1: { success: :complete, failure: :fail_hard } }
+      end
       act(:step) { Visiflow::Step.new(step_input) }
       specify { step.is_a? Hash }
       specify { step.name == :step1 }
@@ -37,7 +39,10 @@ describe Visiflow::Step do
         let(:first_step) { :step1 }
         before { step_input }
         act(:return_val) { Visiflow::Step.create_steps(step_input) }
-        specify { return_val.keys.should == [first_step, :step2, :step3, :step1_fail_handler] }
+        specify do
+          return_val.keys.should ==
+            [first_step, :step2, :step3, :step1_fail_handler]
+        end
       end
       context "and first step is a Hash" do
         let(:first_step) do
