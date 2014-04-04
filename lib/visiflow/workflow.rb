@@ -1,5 +1,13 @@
 module Visiflow::Workflow
   attr_accessor :processed_steps, :last_step, :last_result
+  def self.included(base)
+    @classes ||= []
+    @classes << base.name
+  end
+
+  def self.classes
+    @classes
+  end
 
   def initialize(steps = nil)
     steps ||= Array(self.class.steps)
