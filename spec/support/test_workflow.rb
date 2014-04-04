@@ -41,8 +41,14 @@ class TestWorkflow
     @after_step1_called = true
     result
   end
+
+  def successful_completion_states
+    { step3: :success }
+  end
+
+
   # rubocop:disable LineLength
-  %w(step1 step2 step3 part_one_of_two part_two_of_two raising_part_one_of_two).each do |name|
+  %w(step1 step2 step3 part_one_of_two part_two_of_two raising_part_one_of_two step1_fail_handler some_other_fail_handler).each do |name|
     class_eval do
       define_method name do
         @execution_path << name.to_sym
@@ -73,4 +79,6 @@ class TestWorkflow
   def log_error(name, ex)
     @ex = ex
   end
+
+
 end

@@ -45,6 +45,10 @@ describe Visiflow::Workflow do
       it "proceeded through the expected flow" do
         workflow.execution_path.should =~ [:step1, :step2, :step3]
       end
+
+      it "should know it succeeded" do
+        workflow.should be_succeeded
+      end
     end
 
     context "when a step fails" do
@@ -54,6 +58,10 @@ describe Visiflow::Workflow do
 
       it "the expected flow should include the passed spec and failed one" do
         workflow.execution_path.should =~ [:step_that_fails, :fail_handler]
+      end
+
+      it "should know it failed" do
+        workflow.should be_failed
       end
     end
 

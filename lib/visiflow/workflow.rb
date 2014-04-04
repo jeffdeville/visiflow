@@ -1,5 +1,5 @@
 module Visiflow::Workflow
-  attr_accessor :processed_steps
+  attr_accessor :processed_steps, :last_step, :last_result
 
   def initialize(steps = nil)
     steps ||= Array(self.class.steps)
@@ -39,8 +39,9 @@ module Visiflow::Workflow
     next_step = processed_steps[starting_step]
 
     while next_step
-      result = execute_step next_step
-      next_step = determine_next_step(result, next_step)
+      self.last_result = execute_step next_step
+      self.last_step = next_step
+      next_step = determine_next_step(last_result, last_step)
     end
   end
 
@@ -53,6 +54,14 @@ module Visiflow::Workflow
     unless undefined_steps.empty?
       fail "#{self.class.name} has undefined steps: #{undefined_steps.join(", ")}"
     end
+  end
+
+  def succeeded?
+    successful_completion_states[last_step.name] == last_result.status
+  end
+
+  def failed?
+    !succeeded?
   end
 
   private
@@ -69,10 +78,15 @@ module Visiflow::Workflow
   # rubocop:disable CyclomaticComplexity
   # rubocop:disable MethodLength
   def determine_next_step(response, current_step)
+    if current_step[:no_matter_what]
+      return processed_steps[current_step[:no_matter_what]]
+    end
+
+    unless response.is_a? Visiflow::Response
+      fail "#{current_step.name} did not return a Visiflow::Response"
+    end
     next_step_symbol =
       case
-      when current_step[:no_matter_what]
-        current_step[:no_matter_what]
       when current_step[response.status]
         current_step[response.status]
       when current_step[response.status].nil? &&
