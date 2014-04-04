@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Visiflow::Driver do
+describe Visiflow::Workflow do
   describe "before_step" do
     let(:workflow) { TestWorkflow.new }
 

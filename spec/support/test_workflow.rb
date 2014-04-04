@@ -1,5 +1,5 @@
 class TestWorkflow
-  include Visiflow::Driver
+  include Visiflow::Workflow
   attr_reader :before_step1_called, :after_step1_called,
     :execution_path, :log_results, :ex
   attr_accessor :state

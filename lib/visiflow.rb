@@ -1,4 +1,4 @@
 require "visiflow/version"
-require "visiflow/driver"
+require "visiflow/workflow"
 require "visiflow/step"
 require "visiflow/response"

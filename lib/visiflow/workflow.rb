@@ -1,10 +1,10 @@
-# Workflows
-module Visiflow::Driver
+module Visiflow::Workflow
   attr_accessor :processed_steps
 
   def initialize(steps = nil)
     steps ||= Array(self.class.steps)
     self.processed_steps = Visiflow::Step.create_steps(steps)
+    assert_all_steps_defined
   end
 
   def before_step(step)
@@ -44,13 +44,15 @@ module Visiflow::Driver
     end
   end
 
-  def all_steps_defined?
+  def assert_all_steps_defined
     undefined_steps = processed_steps.values.map do |s|
       [s.name] + s.step_map.values
     end
     undefined_steps = undefined_steps.flatten.uniq
       .select{|step| !respond_to?(step) }
-    !undefined_steps.empty?
+    unless undefined_steps.empty?
+      fail "#{self.class.name} has undefined steps: #{undefined_steps.join(", ")}"
+    end
   end
 
   private
