@@ -107,17 +107,5 @@ describe Visiflow::Workflow do
         end
       end
     end
-
-    context ":success step with nothing following" do
-      let(:workflow) { TestWorkflow.new [:step1] }
-      act(:next_step) { workflow.run }
-      specify { next_step.should be_nil }
-    end
-
-    context ":failure step with nothing following" do
-      let(:workflow) { TestWorkflow.new [:step_that_fails] }
-      act(:next_step) { workflow.run }
-      specify { next_step.should be_nil }
-    end
   end
 end
