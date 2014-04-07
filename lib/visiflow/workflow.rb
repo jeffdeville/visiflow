@@ -5,8 +5,8 @@ module Visiflow::Workflow
     @classes << base.name
   end
 
-  def self.classes
-    @classes
+  class << self
+    attr_reader :classes
   end
 
   def initialize(steps = nil)
@@ -62,7 +62,8 @@ module Visiflow::Workflow
     undefined_steps = undefined_steps.flatten.uniq
       .select{|step| !respond_to?(step) }
     unless undefined_steps.empty?
-      fail "#{self.class.name} has undefined steps: #{undefined_steps.join(", ")}"
+      undefined_steps_string = undefined_steps.join(", ")
+      fail "#{self.class.name} has undefined steps: #{undefined_steps_string}"
     end
   end
 
