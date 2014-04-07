@@ -51,6 +51,8 @@ module Visiflow::Workflow
       self.last_step = next_step
       next_step = determine_next_step(last_result, last_step)
     end
+
+    self
   end
 
   def assert_all_steps_defined

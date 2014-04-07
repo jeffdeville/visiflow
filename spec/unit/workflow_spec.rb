@@ -40,7 +40,7 @@ describe Visiflow::Workflow do
   describe "run" do
     context "when all steps' results are success" do
       let(:workflow) { TestWorkflow.new }
-      act { workflow.run }
+      act(:ran_workflow) { workflow.run }
 
       it "proceeded through the expected flow" do
         workflow.execution_path.should =~ [:step1, :step2, :step3]
@@ -48,6 +48,10 @@ describe Visiflow::Workflow do
 
       it "should know it succeeded" do
         workflow.should be_succeeded
+      end
+
+      it "returns the workflow" do
+        ran_workflow.should eq(workflow)
       end
     end
 
