@@ -3,10 +3,17 @@ module Visiflow::Workflow
   def self.included(base)
     @classes ||= []
     @classes << base.name
+    base.extend ClassMethods
   end
 
   class << self
     attr_reader :classes
+  end
+
+  module ClassMethods
+    def run(*args)
+      new(*args).run
+    end
   end
 
   def initialize(steps = nil)

@@ -3,6 +3,19 @@ require 'spec_helper'
 describe Visiflow::Workflow do
   subject(:workflow) { TestWorkflow.new }
 
+  describe ".run" do
+    it "creates a new workflow with the arguments and runs it" do
+      expect(TestWorkflow).to receive(:new).with(foo: 123).and_return(workflow)
+      expect(workflow).to receive(:run)
+
+      TestWorkflow.run(foo: 123)
+    end
+
+    it "returns the workflow" do
+      expect(TestWorkflow.run).to be_a(TestWorkflow)
+    end
+  end
+
   describe "before_step" do
     context "when a before_step is defined" do
       act(:response) { workflow.before_step(:step1) }
