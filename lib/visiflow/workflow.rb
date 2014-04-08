@@ -75,6 +75,10 @@ module Visiflow::Workflow
     !succeeded?
   end
 
+  def last_message
+    last_result.message
+  end
+
   private
 
   # There are a few 'special' response statuses, and they behave like this:
