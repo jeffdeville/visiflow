@@ -14,6 +14,10 @@ class Visiflow::Step
     step_map[result]
   end
 
+  def key?(result)
+    step_map.key?(result)
+  end
+
   def to_s
     name
   end

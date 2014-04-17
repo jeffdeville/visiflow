@@ -1,4 +1,6 @@
 module Visiflow::Workflow
+  STOP = nil
+
   attr_accessor :processed_steps, :last_step, :last_result
   def self.included(base)
     @classes ||= []
@@ -66,7 +68,7 @@ module Visiflow::Workflow
     undefined_steps = processed_steps.values.map do |s|
       [s.name] + s.step_map.values
     end
-    undefined_steps = undefined_steps.flatten.uniq
+    undefined_steps = undefined_steps.flatten.uniq.compact
       .select{|step| !respond_to?(step) }
     unless undefined_steps.empty?
       undefined_steps_string = undefined_steps.join(", ")
@@ -109,10 +111,9 @@ module Visiflow::Workflow
     end
     next_step_symbol =
       case
-      when current_step[response.status]
+      when current_step.key?(response.status)
         current_step[response.status]
-      when current_step[response.status].nil? &&
-        (response.success? || response.failure?)
+      when response.success? || response.failure?
         nil
       else
         # rubocop:disable LineLength
