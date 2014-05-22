@@ -18,5 +18,9 @@ module Visiflow
         @status == method_string.gsub("?", "").to_sym
       end
     end
+
+    def to_s
+      "#{status}: #{message}"
+    end
   end
 end
