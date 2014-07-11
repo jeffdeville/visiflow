@@ -54,6 +54,10 @@ module Visiflow::Workflow
 
   def run(starting_step = processed_steps.keys.first)
     next_step = processed_steps[starting_step]
+    unless next_step
+      fail Visiflow::WorkflowError.new
+        "Could not find step: #{starting_step} in #{processed_steps.keys}"
+    end
 
     while next_step
       self.last_result = execute_step next_step

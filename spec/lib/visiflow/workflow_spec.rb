@@ -43,12 +43,18 @@ describe Visiflow::Workflow do
         workflow.after_step(:step2, Visiflow::Response.success)
       end
       it "should return true to prevent canceling the workflow" do
-        response.should be_true
+        response.should be_truthy
       end
     end
   end
 
   describe "run" do
+    context "when first step does not exist" do
+      it "should raise" do
+        expect { workflow.run(:i_do_not_exist) }.to raise_error Visiflow::WorkflowError
+      end
+    end
+
     context "when all steps' results are success" do
       act(:ran_workflow) { workflow.run }
 
