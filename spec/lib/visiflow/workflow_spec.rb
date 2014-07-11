@@ -19,13 +19,13 @@ describe Visiflow::Workflow do
   describe "before_step" do
     context "when a before_step is defined" do
       act(:response) { workflow.before_step(:step1) }
-      specify { workflow.before_step1_called.should be_true }
+      specify { workflow.before_step1_called.should be_truthy }
     end
 
     context "when a before_step is NOT defined" do
       act(:response) { workflow.before_step(:step2) }
       it "should return true to prevent canceling the workflow" do
-        response.should be_true
+        response.should be_truthy
       end
     end
   end
@@ -35,7 +35,7 @@ describe Visiflow::Workflow do
       act(:response) do
         workflow.after_step(:step1, Visiflow::Response.success)
       end
-      specify { workflow.after_step1_called.should be_true }
+      specify { workflow.after_step1_called.should be_truthy }
     end
 
     context "when a after_step is NOT defined" do
