@@ -51,7 +51,8 @@ describe Visiflow::Workflow do
   describe "run" do
     context "when first step does not exist" do
       it "should raise" do
-        expect { workflow.run(:i_do_not_exist) }.to raise_error Visiflow::WorkflowError
+        expect { workflow.run(:i_do_not_exist) }
+          .to raise_error Visiflow::WorkflowError
       end
     end
 
