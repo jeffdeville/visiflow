@@ -12,7 +12,8 @@ describe Visiflow::Logging do
       act(:last_result) { subject.execute_step success_step }
 
       it "should have logged the completion of the step" do
-        logger.should have_received(:info).with("[succeed] --> [success]")
+        logger.should have_received(:info)
+          .with("LoggingWorkflow: [succeed] --> [success]")
       end
 
       it "should have returned the visiflow result to the caller" do
