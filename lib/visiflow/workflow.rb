@@ -2,10 +2,17 @@ module Visiflow::Workflow
   STOP = nil
 
   attr_accessor :processed_steps, :last_step, :last_result
-  def self.included(base)
+  def self.included(klass)
     @classes ||= []
-    @classes << base.name
-    base.extend ClassMethods
+    @classes << klass.name
+    klass.extend ClassMethods
+    # Virtus to:
+    #   - determine which parameters should be saved to the job queue
+    #   - provide type conversions for job queues that store data in json
+    klass.class_eval do
+      include Virtus.model(constructor: false)
+      attribute :step_after_wake, String
+    end
   end
 
   class << self
@@ -15,6 +22,10 @@ module Visiflow::Workflow
   module ClassMethods
     def run(*args)
       new(*args).run
+    end
+
+    def delay(step_name)
+      "__delay__#{step_name}".to_sym
     end
   end
 
@@ -47,14 +58,12 @@ module Visiflow::Workflow
         after_step(step.name, result)
       end
     end
-    # rescue => e # TODO: give the response the error
-    #   return Visiflow::Response.failure(
-    #     "Uncaught exception! \n #{e.message}\n#{e.backtrace.join("\n")}")
   end
 
   def run(starting_step = processed_steps.keys.first)
     next_step = determine_first_step(starting_step)
     while next_step
+      break if defined?(interrupt_run_at) && interrupt_run_at(next_step)
       self.last_result = execute_step next_step
       self.last_step = next_step
       next_step = determine_next_step(last_result, last_step)
@@ -74,7 +83,8 @@ module Visiflow::Workflow
 
   def assert_all_steps_defined
     undefined_steps = processed_steps.values.map do |s|
-      [s.name] + s.step_map.values
+      # hack to get the step's underlying name
+      [s.name] + s.step_map.values.map{|value| value.to_s.split("__").last.to_sym}
     end
     undefined_steps = undefined_steps.flatten.uniq.compact
       .select { |step| !respond_to?(step) }
@@ -96,6 +106,36 @@ module Visiflow::Workflow
     last_result.message
   end
 
+
+
+  def undelay(step_name)
+    step_name.split("__delay__").last
+  end
+
+  # code that is run when the workflow 'wakes up'. Can be used to run
+  # any step in a workflow, based on the 'step_name' provided
+  def perform(step_name, env)
+    self.attributes = env
+    run step_name
+  end
+
+  def perform_async(step_after_wake, attributes)
+    fail "This method should invoke your background job runner"
+  end
+
+  # You can delay the execution of a step with the response type: 'delay'
+  # this will check for that result, and stop the workflow's execution in
+  # one thread, and queue it up in the job queue (by calling delay)
+  def interrupt_run_at(next_step)
+    return false unless last_result
+    if last_result.delay?
+      self.step_after_wake = next_step.name
+      perform_async step_after_wake, attributes
+      return true
+    end
+    false
+  end
+
   private
 
   # There are a few 'special' response statuses, and they behave like this:
@@ -110,25 +150,43 @@ module Visiflow::Workflow
   # rubocop:disable CyclomaticComplexity
   # rubocop:disable MethodLength
   def determine_next_step(response, current_step)
-    if current_step[:no_matter_what]
-      return processed_steps[current_step[:no_matter_what]]
-    end
+    # if current_step[:no_matter_what]
+    #   return processed_steps[current_step[:no_matter_what]]
+    # end
+
+    # stop_workflow = yield response, current_step if block_given?
+    # return if stop_workflow
 
     unless response.is_a? Visiflow::Response
       fail "#{current_step.name} did not return a Visiflow::Response"
     end
+
     next_step_symbol =
       case
       when current_step.key?(response.status)
         current_step[response.status]
       when response.success? || response.failure?
+        # It's ok to end on a success or failure response
         nil
       else
-        # rubocop:disable LineLength
-        msg = "#{current_step.name} returned: #{response.status}, but we can't find that outcome's step"
-        p msg
+        msg = "#{current_step.name} returned: #{response.status}, " \
+          "but we can't find that outcome's step"
         fail ArgumentError, msg
       end
+
+    # This is hacky, and should be replaced with a StepProcessChain instead,
+    # though not in this method...
+    if next_step_symbol.to_s.start_with?("delay__")
+      perform_async(next_step_symbol.to_s.split("__").last, self.attributes)
+      return nil
+    end
+    # step_process_chain = StepProcessChain.new
+    # step_process_chain.process(next_step_symbol)
+
+    # return nil if step_process_chain.halt?
+    # next_step_symbol = step_process_chain.step_name(next_step_symbol)
+
+
     next_step_symbol ? processed_steps[next_step_symbol] : nil
   end
 end

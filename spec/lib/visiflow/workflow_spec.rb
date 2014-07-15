@@ -93,32 +93,32 @@ describe Visiflow::Workflow do
   end
 
   describe "#determine_next_step" do
-    describe ":no_matter_what exists" do
-      context "and another step also exist" do
-        let(:crappy_steps) do
-          [{ raising_part_one_of_two: {
-            no_matter_what: :does_not_matter,
-            this_breaks: :everything }
-          }]
-        end
-        # rubocop:disable LineLength
-        it "should raise when it realizes that a no_matter_what step exists w/ any other step result" do
-          -> { TestWorkflow.new(crappy_steps) }.should raise_error
-        end
-      end
-      context "when no other step exists" do
-        act(:result) { workflow.run(:part_one_of_two) }
-        it "runs the no_matter_what step" do
-          workflow.execution_path.should include(:part_two_of_two)
-        end
-      end
-      context "even if an exception occurs" do
-        act(:result) { workflow.run(:raising_part_one_of_two) }
-        it "runs the no_matter_what step" do
-          workflow.execution_path.should include(:part_two_of_two)
-        end
-      end
-    end
+    # describe ":no_matter_what exists" do
+    #   context "and another step also exist" do
+    #     let(:crappy_steps) do
+    #       [{ raising_part_one_of_two: {
+    #         no_matter_what: :does_not_matter,
+    #         this_breaks: :everything }
+    #       }]
+    #     end
+    #     # rubocop:disable LineLength
+    #     it "should raise when it realizes that a no_matter_what step exists w/ any other step result" do
+    #       -> { TestWorkflow.new(crappy_steps) }.should raise_error
+    #     end
+    #   end
+    #   context "when no other step exists" do
+    #     act(:result) { workflow.run(:part_one_of_two) }
+    #     it "runs the no_matter_what step" do
+    #       workflow.execution_path.should include(:part_two_of_two)
+    #     end
+    #   end
+    #   context "even if an exception occurs" do
+    #     act(:result) { workflow.run(:raising_part_one_of_two) }
+    #     it "runs the no_matter_what step" do
+    #       workflow.execution_path.should include(:part_two_of_two)
+    #     end
+    #   end
+    # end
   end
 
   describe "#last_message" do
@@ -130,4 +130,35 @@ describe Visiflow::Workflow do
       expect(workflow.last_message).to eq("foo")
     end
   end
+
+  describe ".current_state" do
+    let(:workflow) do
+      DelayableWorkflow.new
+    end
+
+    act(:response) { workflow.run }
+
+    it "should have persisted all of the visiflow attributes" do
+      expect(workflow.delayable_params[:something_persisted])
+        .to eq "in_process"
+    end
+
+    it "should not have persisted any other attributes" do
+      expect(workflow.delayable_params[:not_persisted]).to be_nil
+    end
+
+    it "should have persisted the next step to run" do
+      expect(workflow.delayable_next_step).to eq "process_two"
+    end
+  end
+
+  describe ".resume_state" do
+    let(:workflow) { DelayableWorkflow.new }
+    let(:attributes) do
+      { something_persisted: "from sleep" }
+    end
+    act { workflow.perform("delayed_process", attributes) }
+    specify { expect(workflow.something_persisted).to eq "from sleep" }
+  end
+
 end
