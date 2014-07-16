@@ -1,37 +1,44 @@
+class TestWorkflowContext < Visiflow::BaseContext
+end
 class TestWorkflow
   include Visiflow::Workflow
+  set_context TestWorkflowContext
   attr_reader :before_step1_called, :after_step1_called,
     :execution_path, :log_results, :ex
   attr_accessor :state
 
-  # rubocop:disable MethodLength
-  def initialize(steps = nil)
-    default_steps = [
-      { step1: { success: :step2,
-                 failure: :step1_fail_handler }
-        },
-
-      { step2: { success: :step3 } },
-
-      :step3,
-
-      { step_that_fails: {
-      failure: :fail_handler } },
-
-      :step_that_raises,
-
-      :fail_handler,
-
-      { part_one_of_two: { no_matter_what: :part_two_of_two } },
-      { raising_part_one_of_two: { no_matter_what: :part_two_of_two } },
-
-      :part_two_of_two,
-      :some_other_fail_handler
-    ]
-    super(steps || default_steps)
+  def initialize(initial_values={})
+    super
     @execution_path = []
     @log_results = []
   end
+
+  # rubocop:disable MethodLength
+  def self.steps
+    [
+          { step1: { success: :step2,
+                     failure: :step1_fail_handler }
+            },
+
+          { step2: { success: :step3 } },
+
+          :step3,
+
+          { step_that_fails: {
+          failure: :fail_handler } },
+
+          :step_that_raises,
+
+          :fail_handler,
+
+          { part_one_of_two: { no_matter_what: :part_two_of_two } },
+          { raising_part_one_of_two: { no_matter_what: :part_two_of_two } },
+
+          :part_two_of_two,
+          :some_other_fail_handler
+        ]
+  end
+  # rubocop:enable MethodLength
 
   def before_step1
     @before_step1_called = true

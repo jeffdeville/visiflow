@@ -1,4 +1,4 @@
-class TestContextualWorkflowContext < BaseContext
+class TestContextualWorkflowContext < Visiflow::BaseContext
   attribute :arg1, String
   attribute :arg2, String
   attribute :arg3, String
@@ -6,12 +6,8 @@ end
 
 class TestContextualWorkflow
   include Visiflow::Workflow
-  attr_accessor :context
+  set_context TestContextualWorkflowContext
 
-  def initialize(steps: nil, initial_values: {})
-    self.context = TestContextualWorkflowContext.new initial_values
-    super(steps)
-  end
   def self.steps
     [
       { step1: { success: :step2 } },

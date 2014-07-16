@@ -1,7 +1,8 @@
 module Visiflow::Workflow
   STOP = nil
 
-  attr_accessor :processed_steps, :last_step, :last_result
+
+  attr_accessor :processed_steps
   def self.included(klass)
     @classes ||= []
     @classes << klass.name
@@ -11,33 +12,33 @@ module Visiflow::Workflow
     #   - provide type conversions for job queues that store data in json
     klass.class_eval do
       include Virtus.model(constructor: false)
+      attr_reader :classes
+      attr_accessor :context
     end
   end
 
-  class << self
-    attr_reader :classes, :context
-  end
-  def self.included(klass)
-    klass.class_eval do
-      include Virtus.model(constructor: false)
-      attribute :step_after_wake, String
-    end
-  end
   module ClassMethods
-    def run(*args)
-      new(*args).run
+    attr_accessor :context_class
+    CONTEXT_MISSING_LAST_RESULT = "Your context class must have a last_result property"
+    def set_context(klass)
+      fail CONTEXT_MISSING_LAST_RESULT unless klass.instance_methods.include? :last_result
+      self.context_class = klass
     end
 
     def delay(step_name)
       "delay__#{step_name}".to_sym
     end
+
+    def run(initial_values={})
+      new(initial_values).run
+    end
   end
 
-  def initialize(steps=nil)
-    steps ||= Array(self.class.steps)
-    self.processed_steps = Visiflow::Step.create_steps(steps)
+  def initialize(initial_values={})
+    fail "You must call `set_context CLASS_NAME` in your workflow" unless self.class.context_class
+    self.context = self.class.context_class.new(initial_values)
+    self.processed_steps = Visiflow::Step.create_steps(Array(self.class.steps))
     assert_all_steps_defined
-    assert_context_exists
   end
 
   def before_step(step)
@@ -74,10 +75,9 @@ module Visiflow::Workflow
   def run(starting_step = processed_steps.keys.first)
     next_step = determine_first_step(starting_step)
     while next_step
-      break if defined?(interrupt_run_at) && interrupt_run_at(next_step)
-      self.last_result = execute_step next_step
-      self.last_step = next_step
-      next_step = determine_next_step(last_result, last_step)
+      context.last_result = execute_step next_step
+      context.last_step = next_step
+      next_step = determine_next_step(context.last_result, context.last_step)
     end
 
     self
@@ -88,7 +88,7 @@ module Visiflow::Workflow
     unless next_step
       fail Visiflow::WorkflowError, starting_step,
         "Could not find step: #{starting_step} in #{processed_steps.keys}"
-    end
+        end
     next_step
   end
 
@@ -110,22 +110,12 @@ module Visiflow::Workflow
     fail "missing a required parameter"
   end
 
-  CONTEXT_NIL_ERROR = "Context must be initialized"
-  CONTEXT_MISSING = "A context must be defined on the workflow"
-  CONTEXT_MISSING_LAST_RESULT = "Your context class must have a last_result property"
-  def assert_context_exists
-    fail CONTEXT_MISSING unless defined? context
-    fail CONTEXT_NIL_ERROR if context.nil?
-
-    begin
-      context.last_result
-    rescue
-      fail CONTEXT_MISSING_LAST_RESULT
-    end
-  end
+  ##############################
+  # Status
+  ##############################
 
   def succeeded?
-    successful_completion_states[last_step.name] == last_result.status
+    successful_completion_states[context.last_step.name] == context.last_result.status
   end
 
   def failed?
@@ -134,6 +124,20 @@ module Visiflow::Workflow
 
   def last_message
     last_result.message
+  end
+
+  def last_step
+    self.context.last_step
+  end
+  def last_step=(value)
+    self.context.last_step = value
+  end
+
+  def last_result
+    self.context.last_result
+  end
+  def last_result=(value)
+    self.context.last_result = value
   end
 
   ##############################
@@ -150,7 +154,7 @@ module Visiflow::Workflow
   # code that is run when the workflow 'wakes up'. Can be used to run
   # any step in a workflow, based on the 'step_name' provided
   def perform(step_name, env)
-    self.attributes = env
+    self.context.attributes = env
     run step_name.to_sym
   end
 
@@ -180,22 +184,22 @@ module Visiflow::Workflow
     end
 
     next_step_symbol =
-      case
-      when current_step.key?(response.status)
-        current_step[response.status]
-      when response.success? || response.failure?
-        # It's ok to end on a success or failure response
-        STOP
-      else
-        msg = "#{current_step.name} returned: #{response.status}, " \
-          "but we can't find that outcome's step"
-        fail ArgumentError, msg
-      end
+    case
+    when current_step.key?(response.status)
+      current_step[response.status]
+    when response.success? || response.failure?
+      # It's ok to end on a success or failure response
+      STOP
+    else
+      msg = "#{current_step.name} returned: #{response.status}, " \
+        "but we can't find that outcome's step"
+      fail ArgumentError, msg
+    end
 
     # This is hacky, and should be replaced with a StepProcessChain instead,
     # though not in this method...
     if delayed?(next_step_symbol)
-      self.class.perform_async(undelay(next_step_symbol), attributes)
+      self.class.perform_async(undelay(next_step_symbol), context.attributes)
       return STOP
     end
 

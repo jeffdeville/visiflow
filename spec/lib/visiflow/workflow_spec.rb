@@ -7,7 +7,6 @@ describe Visiflow::Workflow do
     it "creates a new workflow with the arguments and runs it" do
       expect(TestWorkflow).to receive(:new).with(foo: 123).and_return(workflow)
       expect(workflow).to receive(:run)
-
       TestWorkflow.run(foo: 123)
     end
 
@@ -114,7 +113,10 @@ describe Visiflow::Workflow do
     it "should have persisted all of the visiflow attributes" do
       expect(DelayableWorkflow)
         .to have_received(:perform_async)
-        .with(:process_two,  something_persisted: "in_process")
+        .with(:process_two,
+          something_persisted: "in_process",
+          last_step: workflow.last_step,
+          last_result: workflow.last_result)
     end
   end
 
@@ -124,6 +126,6 @@ describe Visiflow::Workflow do
       { something_persisted: "from sleep" }
     end
     act { workflow.perform("process_two", attributes) }
-    specify { expect(workflow.something_persisted).to eq "delayed_process" }
+    specify { expect(workflow.context.something_persisted).to eq "delayed_process" }
   end
 end

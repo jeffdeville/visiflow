@@ -1,18 +1,32 @@
 module Visiflow
   class Response
-    attr_reader :status, :values
+    include Virtus.model(constructor: false)
+    attribute :status, Symbol
+    attribute :values, Hash
+    attribute :message, String
+
+    # attr_reader :status, :message, :values
     def initialize(status, values = {})
-      @status = status.to_sym
+      self.status = status.to_sym
       if values && values.has_key?(:message)
-        @message = values.delete :message
+        self.message = values.delete :message
       end
-      @values = values
+      self.values = values
+    end
+
+    def [](key)
+      values[key]
     end
 
     def self.method_missing(method, *args)
       status = method.to_sym
-      message = (args.nil? || args.count == 0) ? nil : args.first
-      Visiflow::Response.new(status, message)
+      values = (args.nil? || args.count == 0) ? nil : args.first
+      values = case values
+      when String then { message: values }
+      else
+        values
+      end
+      Visiflow::Response.new(status, values)
     end
 
     def method_missing(method, *args)

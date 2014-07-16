@@ -2,54 +2,21 @@ require 'spec_helper'
 
 describe Visiflow::Workflow do
   describe "initialize" do
-    context "workflows with no context" do
-      class ContextlessWorkflow
-        include Visiflow::Workflow
-        def self.steps
-          []
-        end
-      end
-
-      it "should fail to initialize" do
-        expect { ContextlessWorkflow.new }.to raise_error "A context must be defined on the workflow"
-      end
-    end
-
-    context "workflows with nil context" do
-      class NilContextlessWorkflow
-        include Visiflow::Workflow
-        attr_accessor :context
-        def self.steps
-          []
-        end
-
-        def initialize
-          self.context = nil
-          super
-        end
-      end
-
-      it "should raise in initialization" do
-        expect { NilContextlessWorkflow.new }.to raise_error "Context must be initialized"
-      end
-    end
-
     context "workflows with context that does not define a last_result" do
-      class InvalidContextWorkflow
-        include Visiflow::Workflow
-        attr_accessor :context
-        def self.steps
-          []
-        end
-
-        def initialize
-          self.context = "I am a lousy context"
-          super
-        end
-      end
-
       it "should raise in the initialization" do
-        expect { InvalidContextWorkflow.new }.to raise_error "Your context class must have a last_result property"
+        class InvalidContext
+          def initialize(values)
+          end
+        end
+        expect {
+          class InvalidContextWorkflow
+            include Visiflow::Workflow
+            set_context InvalidContext
+            def self.steps
+              []
+            end
+          end
+          }.to raise_error "Your context class must have a last_result property"
       end
     end
 
