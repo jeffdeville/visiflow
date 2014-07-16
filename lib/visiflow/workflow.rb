@@ -25,7 +25,7 @@ module Visiflow::Workflow
     end
 
     def delay(step_name)
-      "__delay__#{step_name}".to_sym
+      "delay__#{step_name}".to_sym
     end
   end
 
@@ -83,8 +83,9 @@ module Visiflow::Workflow
 
   def assert_all_steps_defined
     undefined_steps = processed_steps.values.map do |s|
-      # hack to get the step's underlying name
-      [s.name] + s.step_map.values.map{|value| value.to_s.split("__").last.to_sym}
+      [s.name] + s.step_map.values.map do |value|
+        value && value.to_s.split("__").last.to_sym
+      end
     end
     undefined_steps = undefined_steps.flatten.uniq.compact
       .select { |step| !respond_to?(step) }

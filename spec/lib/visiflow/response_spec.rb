@@ -15,7 +15,7 @@ describe Visiflow::Response do
 
   it "should know if a status is currently set" do
     resp = Visiflow::Response.success
-    resp.success?.should be_truthy
+    resp.success?.should be true
   end
 
 end
