@@ -4,7 +4,7 @@ module Visiflow
     DIVIDER = "__"
     attr_accessor :step_processors
 
-    def initialize(step_name, step_processors={})
+    def initialize(step_name, step_processors = {})
       self.step_name = step_name
       self.step_processors = step_processors
     end
@@ -48,10 +48,10 @@ module Visiflow
     end
 
     def halt_workflow?
-      self.halt_workflow
+      halt_workflow
     end
     def halt_step_processor?
-      self.halt_step_processor
+      halt_step_processor
     end
   end
 

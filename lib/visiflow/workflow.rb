@@ -11,7 +11,6 @@ module Visiflow::Workflow
     #   - provide type conversions for job queues that store data in json
     klass.class_eval do
       include Virtus.model(constructor: false)
-      attribute :step_after_wake, String
     end
   end
 
@@ -75,7 +74,7 @@ module Visiflow::Workflow
   def determine_first_step(starting_step)
     next_step = processed_steps[starting_step]
     unless next_step
-      fail Visiflow::WorkflowError,
+      fail Visiflow::WorkflowError, starting_step,
         "Could not find step: #{starting_step} in #{processed_steps.keys}"
     end
     next_step
@@ -107,8 +106,6 @@ module Visiflow::Workflow
     last_result.message
   end
 
-
-
   def undelay(step_name)
     step_name.split("__delay__").last
   end
@@ -117,24 +114,11 @@ module Visiflow::Workflow
   # any step in a workflow, based on the 'step_name' provided
   def perform(step_name, env)
     self.attributes = env
-    run step_name
+    run step_name.to_sym
   end
 
   def perform_async(step_after_wake, attributes)
     fail "This method should invoke your background job runner"
-  end
-
-  # You can delay the execution of a step with the response type: 'delay'
-  # this will check for that result, and stop the workflow's execution in
-  # one thread, and queue it up in the job queue (by calling delay)
-  def interrupt_run_at(next_step)
-    return false unless last_result
-    if last_result.delay?
-      self.step_after_wake = next_step.name
-      perform_async step_after_wake, attributes
-      return true
-    end
-    false
   end
 
   private
@@ -178,7 +162,7 @@ module Visiflow::Workflow
     # This is hacky, and should be replaced with a StepProcessChain instead,
     # though not in this method...
     if next_step_symbol.to_s.start_with?("delay__")
-      perform_async(next_step_symbol.to_s.split("__").last, self.attributes)
+      self.class.perform_async(next_step_symbol.to_s.split("__").last.to_sym, attributes)
       return nil
     end
     # step_process_chain = StepProcessChain.new
@@ -186,7 +170,6 @@ module Visiflow::Workflow
 
     # return nil if step_process_chain.halt?
     # next_step_symbol = step_process_chain.step_name(next_step_symbol)
-
 
     next_step_symbol ? processed_steps[next_step_symbol] : nil
   end
