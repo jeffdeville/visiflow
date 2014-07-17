@@ -23,7 +23,6 @@ describe Visiflow::Logging do
 
     context "and a step fails" do
       before { logger.stub(:error) }
-      # subject { LoggingWorkflow.new logger: logger }
       act(:err) do
         begin
           subject.execute_step fail_step
@@ -46,7 +45,7 @@ describe Visiflow::Logging do
 
     context "and a step succeeds" do
       it "should not raise because of a missing logger" do
-        expect { subject.execute_step  success_step }.not_to raise_error
+        expect { subject.execute_step success_step }.not_to raise_error
       end
     end
 
