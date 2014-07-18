@@ -15,9 +15,14 @@ module Visiflow::Workflow
   end
 
   class << self
-    attr_reader :classes
+    attr_reader :classes, :context
   end
-
+  def self.included(klass)
+    klass.class_eval do
+      include Virtus.model(constructor: false)
+      attribute :step_after_wake, String
+    end
+  end
   module ClassMethods
     def run(*args)
       new(*args).run
@@ -28,10 +33,11 @@ module Visiflow::Workflow
     end
   end
 
-  def initialize(steps = nil)
+  def initialize(steps=nil)
     steps ||= Array(self.class.steps)
     self.processed_steps = Visiflow::Step.create_steps(steps)
     assert_all_steps_defined
+    assert_context_exists
   end
 
   def before_step(step)
@@ -50,10 +56,16 @@ module Visiflow::Workflow
     yield
   end
 
+  BAD_STEP_RESPONSE = "Workflow steps must return a Visiflow::Response"
   def execute_step(step)
+    args = get_step_params(step.name)
+
+    # probably should pass in the args to the around and before steps as well.
     around_step(step.name) do
       if before_step(step.name)
-        result = send(step.name)
+        result = args ? send(step.name, args) : send(step.name)
+        fail BAD_STEP_RESPONSE unless result.is_a? Visiflow::Response
+        update_context(result.values)
         after_step(step.name, result)
       end
     end
@@ -91,6 +103,24 @@ module Visiflow::Workflow
     unless undefined_steps.empty?
       undefined_steps_string = undefined_steps.join(", ")
       fail "#{self.class.name} has undefined steps: #{undefined_steps_string}"
+    end
+  end
+
+  def required
+    fail "missing a required parameter"
+  end
+
+  CONTEXT_NIL_ERROR = "Context must be initialized"
+  CONTEXT_MISSING = "A context must be defined on the workflow"
+  CONTEXT_MISSING_LAST_RESULT = "Your context class must have a last_result property"
+  def assert_context_exists
+    fail CONTEXT_MISSING unless defined? context
+    fail CONTEXT_NIL_ERROR if context.nil?
+
+    begin
+      context.last_result
+    rescue
+      fail CONTEXT_MISSING_LAST_RESULT
     end
   end
 
@@ -170,5 +200,27 @@ module Visiflow::Workflow
     end
 
     next_step_symbol ? processed_steps[next_step_symbol] : STOP
+  end
+
+  def get_step_params(step_name)
+    return nil if self.method(step_name).parameters.empty?
+    ({}).tap do |step_params|
+      self.method(step_name).parameters.each do |type, name|
+        if context.attributes.has_key? name
+          step_params[name] = context.attributes[name]
+        end
+      end
+    end
+  end
+
+  def update_context(values={})
+    # return unless result.values
+    (values || {}).each do |key, value|
+      if context.attributes.has_key? key
+        context.send("#{key.to_s}=", value)
+      else
+        fail "'#{key}' not defined on context"
+      end
+    end
   end
 end

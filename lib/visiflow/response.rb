@@ -1,9 +1,12 @@
 module Visiflow
   class Response
-    attr_reader :status, :message
-    def initialize(status, message = nil)
+    attr_reader :status, :values
+    def initialize(status, values = {})
       @status = status.to_sym
-      @message = message
+      if values && values.has_key?(:message)
+        @message = values.delete :message
+      end
+      @values = values
     end
 
     def self.method_missing(method, *args)

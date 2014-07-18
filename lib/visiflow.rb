@@ -1,6 +1,5 @@
 require 'virtus'
-
-require "visiflow/version"
+require 'visiflow/version'
 require 'visiflow/error'
 require "visiflow/workflow"
 require "visiflow/step"
