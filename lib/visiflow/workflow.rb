@@ -106,8 +106,15 @@ module Visiflow::Workflow
     last_result.message
   end
 
+  ##############################
+  # Background Jobs
+  ##############################
   def undelay(step_name)
-    step_name.split("__delay__").last
+    step_name.to_s.split("__").last.to_sym
+  end
+
+  def delayed?(step_name)
+    step_name.to_s.start_with?("delay__")
   end
 
   # code that is run when the workflow 'wakes up'. Can be used to run
@@ -120,6 +127,9 @@ module Visiflow::Workflow
   def perform_async(step_after_wake, attributes)
     fail "This method should invoke your background job runner"
   end
+  ##############################
+  # End Background Jobs
+  ##############################
 
   private
 
@@ -135,13 +145,6 @@ module Visiflow::Workflow
   # rubocop:disable CyclomaticComplexity
   # rubocop:disable MethodLength
   def determine_next_step(response, current_step)
-    # if current_step[:no_matter_what]
-    #   return processed_steps[current_step[:no_matter_what]]
-    # end
-
-    # stop_workflow = yield response, current_step if block_given?
-    # return if stop_workflow
-
     unless response.is_a? Visiflow::Response
       fail "#{current_step.name} did not return a Visiflow::Response"
     end
@@ -152,7 +155,7 @@ module Visiflow::Workflow
         current_step[response.status]
       when response.success? || response.failure?
         # It's ok to end on a success or failure response
-        nil
+        STOP
       else
         msg = "#{current_step.name} returned: #{response.status}, " \
           "but we can't find that outcome's step"
@@ -161,16 +164,11 @@ module Visiflow::Workflow
 
     # This is hacky, and should be replaced with a StepProcessChain instead,
     # though not in this method...
-    if next_step_symbol.to_s.start_with?("delay__")
-      self.class.perform_async(next_step_symbol.to_s.split("__").last.to_sym, attributes)
-      return nil
+    if delayed?(next_step_symbol)
+      self.class.perform_async(undelay(next_step_symbol), attributes)
+      return STOP
     end
-    # step_process_chain = StepProcessChain.new
-    # step_process_chain.process(next_step_symbol)
 
-    # return nil if step_process_chain.halt?
-    # next_step_symbol = step_process_chain.step_name(next_step_symbol)
-
-    next_step_symbol ? processed_steps[next_step_symbol] : nil
+    next_step_symbol ? processed_steps[next_step_symbol] : STOP
   end
 end
