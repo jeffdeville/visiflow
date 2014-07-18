@@ -114,7 +114,7 @@ describe Visiflow::Workflow do
     it "should have persisted all of the visiflow attributes" do
       expect(DelayableWorkflow)
         .to have_received(:perform_async)
-        .with(:process_two,  something_persisted: "in_process ")
+        .with(:process_two,  something_persisted: "in_process")
     end
   end
 
