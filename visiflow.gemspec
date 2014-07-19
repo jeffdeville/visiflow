@@ -8,10 +8,10 @@ Gem::Specification.new do |spec|
   spec.version       = Visiflow::VERSION
   spec.authors       = ["Jeff Deville"]
   spec.email         = ["jeffdeville@gmail.com"]
-  spec.summary       = %q{Workflows in Ruby.}
-  spec.description   = %q{
+  spec.summary       = 'Workflows in Ruby.'
+  spec.description   = '
     Simple, no state-machine over-engineering. Unopinionated.
-  }
+  '
   spec.homepage      = ""
   spec.license       = "MIT"
 
