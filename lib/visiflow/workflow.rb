@@ -221,7 +221,12 @@ module Visiflow::Workflow
     # return unless result.values
     (values || {}).each do |key, value|
       if context.attributes.has_key? key
-        context.send("#{key.to_s}=", value)
+        begin
+          context.send("#{key.to_s}=", value)
+        rescue => err
+          pp err
+          require 'pry'; binding.pry
+        end
       else
         fail "'#{key}' not defined on context"
       end
