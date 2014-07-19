@@ -1,15 +1,19 @@
 class DelayableWorkflow
   include Visiflow::Workflow
+
   class DelayableWorkflowContext < Visiflow::BaseContext
     attribute :something_persisted, String
   end
+
   set_context DelayableWorkflowContext
+
   attr_accessor :not_persisted, :delayable_next_step, :delayable_params
 
   def self.steps
     [
-      { process_one: {
-          success: delay(:process_two),
+      {
+        process_one: {
+          success: delay(:process_two)
         }
       },
       :process_two

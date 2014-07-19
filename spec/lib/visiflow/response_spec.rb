@@ -14,7 +14,7 @@ describe Visiflow::Response do
   end
 
   it "should set a status w/ values" do
-    resp = Visiflow::Response.success({message: 'message', return_val: "hi"})
+    resp = Visiflow::Response.success(message: 'message', return_val: "hi")
     expect(resp.status).to eq :success
     expect(resp.message).to eq "message"
     expect(resp.values).to eq(return_val: "hi")

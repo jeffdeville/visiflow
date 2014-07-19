@@ -8,7 +8,7 @@ describe Visiflow::Workflow do
           def initialize(values)
           end
         end
-        expect {
+        expect do
           class InvalidContextWorkflow
             include Visiflow::Workflow
             set_context InvalidContext
@@ -16,25 +16,24 @@ describe Visiflow::Workflow do
               []
             end
           end
-          }.to raise_error "Your context class must have a last_result property"
+        end.to raise_error "Your context class must have a last_result property"
       end
     end
 
     context "an argument isn't defined in the context" do
       let!(:workflow) { TestContextualWorkflow.new }
       it "raises an exception" do
-        expect {
+        expect do
           step = workflow.processed_steps[:step_with_invalid_arg]
           workflow.execute_step step
-        }.to raise_error "missing a required parameter"
+        end.to raise_error "missing a required parameter"
       end
     end
   end
 
   context "the arguments are defined in the context" do
     let(:workflow) do
-      workflow = TestContextualWorkflow.new(initial_values: { arg1: "initial_value" })
-      workflow
+      TestContextualWorkflow.new(initial_values: { arg1: "initial_value" })
     end
 
     act { workflow.execute_step(workflow.processed_steps[:step1]) }
@@ -56,9 +55,11 @@ describe Visiflow::Workflow do
       TestContextualWorkflow.new(initial_values: { arg1: "initial_value" })
     end
     it "raises an exception" do
-      expect {
-        workflow.execute_step(workflow.processed_steps[:step_with_invalid_output])
-      }.to raise_error "'not_defined' not defined on context"
+      expect do
+        workflow.execute_step(
+          workflow.processed_steps[:step_with_invalid_output]
+        )
+      end.to raise_error "'not_defined' not defined on context"
     end
   end
 end

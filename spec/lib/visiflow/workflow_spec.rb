@@ -126,6 +126,8 @@ describe Visiflow::Workflow do
       { something_persisted: "from sleep" }
     end
     act { workflow.perform("process_two", attributes) }
-    specify { expect(workflow.context.something_persisted).to eq "delayed_process" }
+    specify do
+      expect(workflow.context.something_persisted).to eq "delayed_process"
+    end
   end
 end

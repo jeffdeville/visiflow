@@ -32,6 +32,6 @@ class TestContextualWorkflow
   def step2(arg2: required, arg3: required)
     self.passed_in_arg2 = arg2
     self.passed_in_arg3 = arg3
-    return Visiflow::Response.success
+    Visiflow::Response.success
   end
 end

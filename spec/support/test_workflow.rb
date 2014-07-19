@@ -7,7 +7,7 @@ class TestWorkflow
     :execution_path, :log_results, :ex
   attr_accessor :state
 
-  def initialize(initial_values={})
+  def initialize(initial_values = {})
     super
     @execution_path = []
     @log_results = []

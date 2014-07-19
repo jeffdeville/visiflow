@@ -5,10 +5,9 @@ module Visiflow
     attribute :values, Hash
     attribute :message, String
 
-    # attr_reader :status, :message, :values
     def initialize(status, values = {})
       self.status = status.to_sym
-      if values && values.has_key?(:message)
+      if values && values.key?(:message)
         self.message = values.delete :message
       end
       self.values = values
@@ -18,14 +17,14 @@ module Visiflow
       values[key]
     end
 
-    def self.method_missing(method, *args)
-      status = method.to_sym
+    def self.method_missing(method_name, *args)
+      status = method_name.to_sym
       values = (args.nil? || args.count == 0) ? nil : args.first
       values = case values
-      when String then { message: values }
-      else
-        values
-      end
+               when String then { message: values }
+               else
+                 values
+               end
       Visiflow::Response.new(status, values)
     end
 
