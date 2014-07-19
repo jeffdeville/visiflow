@@ -24,8 +24,8 @@ class Visiflow::Step
 
   def self.create_steps(steps_array)
     Array(steps_array)
-    .map{|s| Visiflow::Step.new(s) }
-    .each_with_object({}){|step, acc| acc[step.name] = step }
+    .map { |s| Visiflow::Step.new(s) }
+    .each_with_object({}) { |step, acc| acc[step.name] = step }
   end
 
   private

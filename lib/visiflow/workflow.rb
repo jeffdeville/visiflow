@@ -77,7 +77,7 @@ module Visiflow::Workflow
       [s.name] + s.step_map.values
     end
     undefined_steps = undefined_steps.flatten.uniq.compact
-      .select{|step| !respond_to?(step) }
+      .select { |step| !respond_to?(step) }
     unless undefined_steps.empty?
       undefined_steps_string = undefined_steps.join(", ")
       fail "#{self.class.name} has undefined steps: #{undefined_steps_string}"
