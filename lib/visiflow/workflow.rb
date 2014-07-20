@@ -47,9 +47,9 @@ module Visiflow::Workflow
         after_step(step.name, result)
       end
     end
-  # rescue => e # TODO: give the response the error
-  #   return Visiflow::Response.failure(
-  #     "Uncaught exception! \n #{e.message}\n#{e.backtrace.join("\n")}")
+    # rescue => e # TODO: give the response the error
+    #   return Visiflow::Response.failure(
+    #     "Uncaught exception! \n #{e.message}\n#{e.backtrace.join("\n")}")
   end
 
   def run(starting_step = processed_steps.keys.first)
