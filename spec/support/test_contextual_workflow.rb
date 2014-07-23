@@ -1,12 +1,10 @@
-class TestContextualWorkflowContext < Visiflow::BaseContext
-  attribute :arg1, String
-  attribute :arg2, String
-  attribute :arg3, String
-end
-
 class TestContextualWorkflow
   include Visiflow::Workflow
-  set_context TestContextualWorkflowContext
+  context do
+    attribute :arg1, String
+    attribute :arg2, String
+    attribute :arg3, String
+  end
 
   def self.steps
     [

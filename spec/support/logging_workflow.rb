@@ -1,7 +1,7 @@
 class LoggingWorkflow
   include Visiflow::Workflow
   include Visiflow::Logging
-  set_context Visiflow::BaseContext
+
   def self.steps
     [
       { succeed: { success: STOP } },

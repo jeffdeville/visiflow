@@ -6,11 +6,7 @@ module Visiflow::Workflow
     @classes ||= []
     @classes << klass.name
     klass.extend ClassMethods
-    # Virtus to:
-    #   - determine which parameters should be saved to the job queue
-    #   - provide type conversions for job queues that store data in json
     klass.class_eval do
-      include Virtus.model(constructor: false)
       attr_reader :classes
       attr_accessor :context
     end
@@ -22,12 +18,16 @@ module Visiflow::Workflow
     CONTEXT_MISSING_LAST_RESULT =
       "Your context class must have a last_result property"
 
-    def set_context(klass)
-      unless klass.instance_methods.include? :last_result
-        fail CONTEXT_MISSING_LAST_RESULT
-      end
+    def context(&block)
+      if block_given?
+        klass = Class.new(Visiflow::BaseContext, &block)
 
-      self.context_class = klass
+        unless klass.instance_methods.include? :last_result
+          fail CONTEXT_MISSING_LAST_RESULT
+        end
+
+        self.context_class = klass
+      end
     end
 
     def delay(step_name)
@@ -40,11 +40,9 @@ module Visiflow::Workflow
   end
 
   def initialize(initial_values = {})
-    unless self.class.context_class
-      fail "You must call `set_context CLASS_NAME` in your workflow"
-    end
+    context_class = self.class.context_class || Visiflow::BaseContext
 
-    self.context = self.class.context_class.new(initial_values)
+    self.context = context_class.new(initial_values)
     self.processed_steps = Visiflow::Step.create_steps(Array(self.class.steps))
     assert_all_steps_defined
   end

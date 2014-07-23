@@ -1,11 +1,9 @@
 class DelayableWorkflow
   include Visiflow::Workflow
 
-  class DelayableWorkflowContext < Visiflow::BaseContext
+  context do
     attribute :something_persisted, String
   end
-
-  set_context DelayableWorkflowContext
 
   attr_accessor :not_persisted, :delayable_next_step, :delayable_params
 

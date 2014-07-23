@@ -1,8 +1,5 @@
-class TestWorkflowContext < Visiflow::BaseContext
-end
 class TestWorkflow
   include Visiflow::Workflow
-  set_context TestWorkflowContext
   attr_reader :before_step1_called, :after_step1_called,
     :execution_path, :log_results, :ex
   attr_accessor :state
