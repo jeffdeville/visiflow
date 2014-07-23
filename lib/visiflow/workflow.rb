@@ -85,8 +85,9 @@ module Visiflow::Workflow
     while context.next_step
       context.last_result = execute_step context.next_step
       context.last_step = context.next_step
-      context.next_step =
-        determine_next_step(context.last_result, context.last_step)
+      next_step_name =
+        determine_next_step_name(context.last_result, context.last_step)
+      context.next_step = processed_steps[handle_delayed_step(next_step_name)]
     end
 
     self
@@ -200,6 +201,15 @@ module Visiflow::Workflow
 
   private
 
+  def handle_delayed_step(step_name)
+    return step_name unless delayed?(step_name)
+
+    context_attributes = context.attributes.reject { |k, _| k == :next_step }
+    self.class.perform_async undelay(step_name), context_attributes
+
+    STOP
+  end
+
   # There are a few 'special' response statuses, and they behave like this:
   #   :success - If success is returned, and there is nothing to go on to,
   #      the process will simply stop. Assumption is that we are at the end
@@ -211,7 +221,7 @@ module Visiflow::Workflow
   #      are separate concerns.
   # rubocop:disable CyclomaticComplexity
   # rubocop:disable MethodLength
-  def determine_next_step(response, current_step)
+  def determine_next_step_name(response, current_step)
     unless response.is_a? Visiflow::Response
       fail "#{current_step.name} did not return a Visiflow::Response"
     end
@@ -229,13 +239,7 @@ module Visiflow::Workflow
       fail ArgumentError, msg
     end
 
-    if delayed?(next_step_symbol)
-      self.class.perform_async(undelay(next_step_symbol),
-        context.attributes.reject { |k, _| k == :next_step })
-      return STOP
-    end
-
-    next_step_symbol ? processed_steps[next_step_symbol] : STOP
+    next_step_symbol || STOP
   end
 
   def get_step_params(step_name)
