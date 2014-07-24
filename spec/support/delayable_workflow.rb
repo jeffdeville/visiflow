@@ -29,4 +29,8 @@ class DelayableWorkflow
     self.not_persisted = "delayed_process"
     Visiflow::Response.success(something_persisted: "delayed_process")
   end
+
+  def successful_completion_states
+    { process_two: :success }
+  end
 end

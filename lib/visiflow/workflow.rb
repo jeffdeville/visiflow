@@ -177,13 +177,17 @@ module Visiflow::Workflow
     run step_name.to_sym
   end
 
-  def perform_async(step_after_wake, attributes)
+  def self.perform_async(step_after_wake, attributes)
     fail "This method should invoke your background job runner"
+  end
+  def perform_async(step_after_wake, attributes)
+    fail "You should implement this in a class method on your workflow"
   end
 
   # If you have an async job that you'd like to run synchronously, you can
   # run it this way
   def run_synchronously
+    @run_synchronously = true
     until succeeded?
       if context.next_step
         run(context.next_step.name)
@@ -203,7 +207,11 @@ module Visiflow::Workflow
     return step_name unless delayed?(step_name)
 
     context_attributes = context.attributes.reject { |k, _| k == :next_step }
-    self.class.perform_async undelay(step_name), context_attributes
+    if @run_synchronously
+      run(undelay(step_name))
+    else
+      self.class.perform_async undelay(step_name), context_attributes
+    end
 
     STOP
   end

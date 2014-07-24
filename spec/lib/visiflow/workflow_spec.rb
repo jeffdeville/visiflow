@@ -130,4 +130,10 @@ describe Visiflow::Workflow do
       expect(workflow.context.something_persisted).to eq "delayed_process"
     end
   end
+
+  describe ".run_synchronously" do
+    let(:workflow) { DelayableWorkflow.new }
+    act { workflow.run_synchronously }
+    specify { workflow.last_step.name.should == :process_two }
+  end
 end
