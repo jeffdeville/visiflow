@@ -116,7 +116,9 @@ describe Visiflow::Workflow do
         .with(:process_two,
           something_persisted: "in_process",
           last_step: workflow.last_step,
-          last_result: workflow.last_result)
+          last_result: workflow.last_result,
+          initial_step: :process_one,
+          is_backgrounded: false)
     end
   end
 
@@ -126,8 +128,15 @@ describe Visiflow::Workflow do
       { something_persisted: "from sleep" }
     end
     act { workflow.perform("process_two", attributes) }
-    specify do
+
+    it "should have loaded the context" do
       expect(workflow.context.something_persisted).to eq "delayed_process"
+    end
+    it "should have set the initial step" do
+      expect(workflow.context.initial_step).to eq :process_two
+    end
+    it "should have marked the workflow as backgrounded" do
+      expect(workflow).to be_backgrounded
     end
   end
 

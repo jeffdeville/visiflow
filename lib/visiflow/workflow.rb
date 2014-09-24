@@ -80,6 +80,7 @@ module Visiflow::Workflow
 
   def run(starting_step = processed_steps.keys.first)
     context.next_step = determine_first_step(starting_step)
+    context.initial_step = context.next_step.name
     while context.next_step
       context.last_result = execute_step context.next_step
       context.last_step = context.next_step
@@ -170,10 +171,16 @@ module Visiflow::Workflow
     step_name.to_s.start_with?("delay__")
   end
 
+  def backgrounded?
+    context.is_backgrounded
+  end
+
   # code that is run when the workflow 'wakes up'. Can be used to run
   # any step in a workflow, based on the 'step_name' provided
   def perform(step_name, env)
     context.attributes = env
+    context.initial_step = step_name.to_sym
+    context.is_backgrounded = true
     run step_name.to_sym
   end
 
