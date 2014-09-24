@@ -15,16 +15,9 @@ module Visiflow::Workflow
   module ClassMethods
     attr_accessor :context_class
 
-    CONTEXT_MISSING_LAST_RESULT =
-      'Your context class must have a last_result property'
-
     def context(&block)
       if block_given?
         klass = Class.new(Visiflow::BaseContext, &block)
-
-        unless klass.instance_methods.include? :last_result
-          fail CONTEXT_MISSING_LAST_RESULT
-        end
 
         self.context_class = klass
       end
