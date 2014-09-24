@@ -256,7 +256,7 @@ module Visiflow::Workflow
   end
 
   def get_step_params(step_name)
-    param_names = method(step_name).parameters.collect(&:last)
+    param_names = method(step_name).parameters.map(&:last)
     return [] if param_names.empty?
     Array.wrap(context.attributes.slice(*param_names))
   end
