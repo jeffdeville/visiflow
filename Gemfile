@@ -4,6 +4,6 @@ source 'https://rubygems.org'
 gemspec
 
 group 'development' do
-  gem 'guard'
+  gem 'guard', "~> 2.6.1"
   gem 'guard-rspec'
 end
