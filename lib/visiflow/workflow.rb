@@ -16,7 +16,7 @@ module Visiflow::Workflow
     attr_accessor :context_class
 
     CONTEXT_MISSING_LAST_RESULT =
-      "Your context class must have a last_result property"
+      'Your context class must have a last_result property'
 
     def context(&block)
       if block_given?
@@ -59,11 +59,11 @@ module Visiflow::Workflow
     result
   end
 
-  def around_step(step_name)
+  def around_step(_step_name)
     yield
   end
 
-  BAD_STEP_RESPONSE = "Workflow steps must return a Visiflow::Response"
+  BAD_STEP_RESPONSE = 'Workflow steps must return a Visiflow::Response'
   def execute_step(step)
     args = get_step_params(step.name)
 
@@ -96,14 +96,14 @@ module Visiflow::Workflow
     next_step = processed_steps[starting_step]
     unless next_step
       fail Visiflow::WorkflowError, starting_step,
-        "Could not find step: #{starting_step} in #{processed_steps.keys}"
+           "Could not find step: #{starting_step} in #{processed_steps.keys}"
     end
     next_step
   end
 
   def assert_all_steps_defined
     unless undefined_steps.empty?
-      undefined_steps_string = undefined_steps.join(", ")
+      undefined_steps_string = undefined_steps.join(', ')
       fail "#{self.class.name} has undefined steps: #{undefined_steps_string}"
     end
   end
@@ -111,7 +111,7 @@ module Visiflow::Workflow
   def undefined_steps
     results = processed_steps.values.map do |step|
       [step.name] + step.step_map.values.map do |value|
-        value && value.to_s.split("__").last.to_sym
+        value && value.to_s.split('__').last.to_sym
       end
     end
 
@@ -119,7 +119,7 @@ module Visiflow::Workflow
   end
 
   def required
-    fail "missing a required parameter"
+    fail 'missing a required parameter'
   end
 
   ##############################
@@ -164,11 +164,11 @@ module Visiflow::Workflow
   # Background Jobs
   ##############################
   def undelay(step_name)
-    step_name.to_s.split("__").last.to_sym
+    step_name.to_s.split('__').last.to_sym
   end
 
   def delayed?(step_name)
-    step_name.to_s.start_with?("delay__")
+    step_name.to_s.start_with?('delay__')
   end
 
   def backgrounded?
@@ -184,11 +184,11 @@ module Visiflow::Workflow
     run step_name.to_sym
   end
 
-  def self.perform_async(step_after_wake, attributes)
-    fail "This method should invoke your background job runner"
+  def self.perform_async(_step_after_wake, _attributes)
+    fail 'This method should invoke your background job runner'
   end
-  def perform_async(step_after_wake, attributes)
-    fail "You should implement this in a class method on your workflow"
+  def perform_async(_step_after_wake, _attributes)
+    fail 'You should implement this in a class method on your workflow'
   end
 
   # If you have an async job that you'd like to run synchronously, you can
@@ -262,7 +262,7 @@ module Visiflow::Workflow
 
     step_params = {}
 
-    signature.each do |type, name|
+    signature.each do |_type, name|
       if context.attributes.key? name
         step_params[name] = context.attributes[name]
       end
@@ -279,7 +279,7 @@ module Visiflow::Workflow
           context.send("#{key}=", value)
         rescue
           logger.error "Unable to set return value: #{key}. " \
-            "It is not defined on the context"
+            'It is not defined on the context'
           raise
         end
       else

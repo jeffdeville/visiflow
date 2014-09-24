@@ -1,15 +1,15 @@
 require 'spec_helper'
 
 describe Visiflow::Step do
-  describe "#initialize" do
-    context "when initializing a final state (indicated by a symbol)" do
+  describe '#initialize' do
+    context 'when initializing a final state (indicated by a symbol)' do
       let(:step_input) { :complete }
       act(:step) { Visiflow::Step.new(step_input) }
       specify { step.is_a? Hash }
       specify { step.name == :complete }
       specify { step.step_map.length.should == 0 }
     end
-    context "when initializing an intermediate state (indicated by a hash)" do
+    context 'when initializing an intermediate state (indicated by a hash)' do
       let(:step_input) do
         { step1: { success: :complete, failure: :fail_hard } }
       end
@@ -22,20 +22,20 @@ describe Visiflow::Step do
     end
   end
 
-  describe "self.create_steps" do
-    context "when empty" do
+  describe 'self.create_steps' do
+    context 'when empty' do
       specify { Visiflow::Step.create_steps([]).should == {} }
       specify { Visiflow::Step.create_steps(nil).should == {} }
     end
-    context "when steps exist" do
+    context 'when steps exist' do
       let(:step_input) do
         [first_step,
          { step2: { success: :step3 } },
          :step3,
          :step1_fail_handler
-         ]
+        ]
       end
-      context "and first step is a Symbol" do
+      context 'and first step is a Symbol' do
         let(:first_step) { :step1 }
         before { step_input }
         act(:return_val) { Visiflow::Step.create_steps(step_input) }
@@ -44,7 +44,7 @@ describe Visiflow::Step do
             [first_step, :step2, :step3, :step1_fail_handler]
         end
       end
-      context "and first step is a Hash" do
+      context 'and first step is a Hash' do
         let(:first_step) do
           { step1: { success: :step2,
                      failure: :step1_fail_handler } }

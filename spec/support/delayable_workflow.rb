@@ -20,14 +20,14 @@ class DelayableWorkflow
 
   def process_one(something_persisted: required)
     # save this so we can test if it ran
-    self.not_persisted = "in_process"
-    Visiflow::Response.success(something_persisted: "in_process")
+    self.not_persisted = 'in_process'
+    Visiflow::Response.success(something_persisted: 'in_process')
   end
 
   def process_two(something_persisted: required)
     # save this so we can test if it ran
-    self.not_persisted = "delayed_process"
-    Visiflow::Response.success(something_persisted: "delayed_process")
+    self.not_persisted = 'delayed_process'
+    Visiflow::Response.success(something_persisted: 'delayed_process')
   end
 
   def successful_completion_states

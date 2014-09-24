@@ -5,7 +5,7 @@ module Visiflow
     railtie_name :visiflow
 
     rake_tasks do
-      load "tasks/workflow.rake"
+      load 'tasks/workflow.rake'
 
     end
   end

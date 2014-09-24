@@ -1,0 +1,58 @@
+# This is the configuration used to check the rubocop source code.
+
+AllCops:
+  Exclude:
+    - bin/**/*
+    - log/**/*
+
+StringLiterals:
+  Enabled: false
+
+AlignParameters:
+  Enabled: false
+
+Documentation:
+  Enabled: false
+
+AccessorMethodName:
+  Enabled: false
+
+DoubleNegation:
+  Enabled: false
+
+SingleSpaceBeforeFirstArg:
+  Enabled: false
+
+GuardClause:
+  Enabled: false
+
+IfUnlessModifier:
+  Enabled: false
+
+UnusedBlockArgument:
+  Enabled: false
+
+UnusedMethodArgument:
+  Enabled: false
+
+IndentArray:
+  Enabled: false
+
+IndentHash:
+  Enabled: false
+
+ClassAndModuleChildren:
+  Enabled: false
+
+Next:
+  Enabled: false
+
+PercentLiteralDelimiters:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Metrics/LineLength:
+  Enabled: true
+  Max: 100

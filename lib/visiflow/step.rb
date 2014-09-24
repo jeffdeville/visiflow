@@ -33,7 +33,7 @@ class Visiflow::Step
   def build_from_hash(step_definition)
     if step_definition.size > 1
       # rubocop:disable LineLength
-      fail ArgumentError, "Use only one key-value pair when specifying a step"
+      fail ArgumentError, 'Use only one key-value pair when specifying a step'
     end
 
     self.name, self.step_map = step_definition.first
@@ -41,7 +41,7 @@ class Visiflow::Step
     # Verify biz rules
     if step_map[:no_matter_what] && step_map.size > 1
       # rubocop:disable LineLength
-      fail ArgumentError, "When specifying a no_matter_what step, only that step can be referenced"
+      fail ArgumentError, 'When specifying a no_matter_what step, only that step can be referenced'
     end
   end
 end

@@ -28,10 +28,10 @@ module Visiflow
       Visiflow::Response.new(status, values)
     end
 
-    def method_missing(method, *args)
+    def method_missing(method, *_args)
       method_string = method.to_s
       if /\?$/.match(method_string) # check if it's a [STATUS]? call
-        @status == method_string.gsub("?", "").to_sym
+        @status == method_string.gsub('?', '').to_sym
       end
     end
 

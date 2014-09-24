@@ -16,14 +16,14 @@ class TestContextualWorkflow
   end
 
   def step1(arg1: required, arg2: required)
-    Visiflow::Response.success(arg2: "changed", arg3: "new")
+    Visiflow::Response.success(arg2: 'changed', arg3: 'new')
   end
 
   def step_with_invalid_arg(not_defined: required)
   end
 
   def step_with_invalid_output
-    Visiflow::Response.success not_defined: "oops"
+    Visiflow::Response.success not_defined: 'oops'
   end
 
   attr_accessor :passed_in_arg2, :passed_in_arg3

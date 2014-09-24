@@ -19,6 +19,6 @@ class LoggingWorkflow
   end
 
   def failure
-    fail "Ouch"
+    fail 'Ouch'
   end
 end

@@ -1,7 +1,7 @@
 class TestWorkflow
   include Visiflow::Workflow
   attr_reader :before_step1_called, :after_step1_called,
-    :execution_path, :log_results, :ex
+              :execution_path, :log_results, :ex
   attr_accessor :state
 
   def initialize(initial_values = {})
@@ -13,27 +13,27 @@ class TestWorkflow
   # rubocop:disable MethodLength
   def self.steps
     [
-          { step1: { success: :step2,
-                     failure: :step1_fail_handler }
-            },
+      { step1: { success: :step2,
+                 failure: :step1_fail_handler }
+        },
 
-          { step2: { success: :step3 } },
+      { step2: { success: :step3 } },
 
-          :step3,
+      :step3,
 
-          { step_that_fails: {
-          failure: :fail_handler } },
+      { step_that_fails: {
+        failure: :fail_handler } },
 
-          :step_that_raises,
+      :step_that_raises,
 
-          :fail_handler,
+      :fail_handler,
 
-          { part_one_of_two: { no_matter_what: :part_two_of_two } },
-          { raising_part_one_of_two: { no_matter_what: :part_two_of_two } },
+      { part_one_of_two: { no_matter_what: :part_two_of_two } },
+      { raising_part_one_of_two: { no_matter_what: :part_two_of_two } },
 
-          :part_two_of_two,
-          :some_other_fail_handler
-        ]
+      :part_two_of_two,
+      :some_other_fail_handler
+    ]
   end
   # rubocop:enable MethodLength
 
@@ -65,11 +65,11 @@ class TestWorkflow
 
   def step_that_fails
     @execution_path << :step_that_fails
-    Visiflow::Response.failure("something broke")
+    Visiflow::Response.failure('something broke')
   end
 
   def step_that_raises
-    fail StandardError, "I raised because I am not well-behaved."
+    fail StandardError, 'I raised because I am not well-behaved.'
   end
 
   def fail_handler
@@ -82,7 +82,7 @@ class TestWorkflow
                       message: result.message, timing: timing }
   end
 
-  def log_error(name, ex)
+  def log_error(_name, ex)
     @ex = ex
   end
 end
