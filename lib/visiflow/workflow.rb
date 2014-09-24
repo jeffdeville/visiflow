@@ -1,5 +1,6 @@
 module Visiflow::Workflow
   include Visiflow::State
+  include Visiflow::Backgrounding
   STOP = nil
 
   attr_accessor :processed_steps
@@ -115,54 +116,6 @@ module Visiflow::Workflow
   def required
     fail 'missing a required parameter'
   end
-
-  ##############################
-  # Background Jobs
-  ##############################
-  def undelay(step_name)
-    step_name.to_s.split('__').last.to_sym
-  end
-
-  def delayed?(step_name)
-    step_name.to_s.start_with?('delay__')
-  end
-
-  def backgrounded?
-    context.is_backgrounded
-  end
-
-  # code that is run when the workflow 'wakes up'. Can be used to run
-  # any step in a workflow, based on the 'step_name' provided
-  def perform(step_name, env)
-    context.attributes = env
-    context.initial_step = step_name.to_sym
-    context.is_backgrounded = true
-    run step_name.to_sym
-  end
-
-  def self.perform_async(_step_after_wake, _attributes)
-    fail 'This method should invoke your background job runner'
-  end
-  def perform_async(_step_after_wake, _attributes)
-    fail 'You should implement this in a class method on your workflow'
-  end
-
-  # If you have an async job that you'd like to run synchronously, you can
-  # run it this way
-  def run_synchronously
-    @run_synchronously = true
-    until succeeded?
-      if context.next_step
-        run(context.next_step.name)
-      else
-        run
-      end
-    end
-    self
-  end
-  ##############################
-  # End Background Jobs
-  ##############################
 
   private
 
