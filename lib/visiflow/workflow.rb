@@ -261,20 +261,19 @@ module Visiflow::Workflow
     Array.wrap(context.attributes.slice(*param_names))
   end
 
+  def assert_all_values_in_context(values)
+    keys_in_common = values.keys & context.attributes.keys
+    if keys_in_common.length < values.keys.length
+      missing_keys = values.keys - keys_in_common
+      fail "#{missing_keys} not defined on context"
+    end
+  end
+
   def update_context(values = {})
-    # return unless result.values
-    (values || {}).each do |key, value|
-      if context.attributes.key? key
-        begin
-          context.send("#{key}=", value)
-        rescue
-          logger.error "Unable to set return value: #{key}. " \
-            'It is not defined on the context'
-          raise
-        end
-      else
-        fail "'#{key}' not defined on context"
-      end
+    return unless values
+    assert_all_values_in_context(values)
+    values.each do |key, value|
+      context.send("#{key}=", value)
     end
   end
 end

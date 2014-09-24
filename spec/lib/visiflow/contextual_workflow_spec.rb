@@ -33,7 +33,7 @@ describe Visiflow::Workflow do
       )
     end
     Then do
-      expect(result).to have_raised("'not_defined' not defined on context")
+      expect(result).to have_raised("[:not_defined] not defined on context")
     end
   end
 end
