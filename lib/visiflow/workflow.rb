@@ -256,19 +256,9 @@ module Visiflow::Workflow
   end
 
   def get_step_params(step_name)
-    signature = method(step_name).parameters
-
-    return [] if signature.empty?
-
-    step_params = {}
-
-    signature.each do |_type, name|
-      if context.attributes.key? name
-        step_params[name] = context.attributes[name]
-      end
-    end
-
-    [step_params]
+    param_names = method(step_name).parameters.collect(&:last)
+    return [] if param_names.empty?
+    Array.wrap(context.attributes.slice(*param_names))
   end
 
   def update_context(values = {})

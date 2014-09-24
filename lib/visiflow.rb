@@ -1,5 +1,7 @@
 require 'virtus'
 require 'visiflow/version'
+require 'visiflow/hash'
+require 'visiflow/array'
 require 'visiflow/error'
 require 'visiflow/workflow'
 require 'visiflow/step'
