@@ -1,28 +1,26 @@
 require 'spec_helper'
 
 describe Visiflow::Response do
-  it 'should set a status w/ no message' do
-    resp = Visiflow::Response.success
-    expect(resp.status).to eq :success
-    expect(resp.message).to be_nil
+
+  context "should set a status w/ no message" do
+    When(:resp) { Visiflow::Response.success }
+    Then { resp.status == :success }
+    And  { resp.success? }
+    And  { resp.message.nil? }
   end
 
-  it 'should set a status w/ a message' do
-    resp = Visiflow::Response.success('yeehaw')
-    expect(resp.status).to eq :success
-    expect(resp.message).to eq 'yeehaw'
+  context "should set a status w/ a message" do
+    When(:resp) { Visiflow::Response.success("yeehaw") }
+    Then { resp.status == :success }
+    And  { resp.message == "yeehaw" }
   end
 
-  it 'should set a status w/ values' do
-    resp = Visiflow::Response.success(message: 'message', return_val: 'hi')
-    expect(resp.status).to eq :success
-    expect(resp.message).to eq 'message'
-    expect(resp.values).to eq(return_val: 'hi')
+  context "should set a status w/ values" do
+    When(:resp) do
+      Visiflow::Response.success(message: 'message', return_val: "hi")
+    end
+    Then { resp.status == :success }
+    And  { resp.message == "message" }
+    And  { resp.values == { return_val: "hi" } }
   end
-
-  it 'should know if a status is currently set' do
-    resp = Visiflow::Response.success
-    resp.success?.should be true
-  end
-
 end
