@@ -1,5 +1,5 @@
 ENV["RAILS_ENV"] ||= 'test'
-
+require 'rspec/given'
 require 'visiflow'
 support_files = Dir[File.join(
   File.expand_path("../../spec/support/**/*.rb", __FILE__)
