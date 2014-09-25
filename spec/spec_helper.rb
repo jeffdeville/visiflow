@@ -1,4 +1,8 @@
 ENV['RAILS_ENV'] ||= 'test'
+
+require "codeclimate-test-reporter"
+CodeClimate::TestReporter.start
+
 require 'rspec/given'
 require 'visiflow'
 support_files = Dir[File.join(
