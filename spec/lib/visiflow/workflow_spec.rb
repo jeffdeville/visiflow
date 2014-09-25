@@ -36,21 +36,16 @@ describe Visiflow::Workflow do
     end
   end
 
-  describe 'run' do
-    context 'when first step does not exist' do
-      When(:response) { workflow.run(:i_do_not_exist) }
-      Then { response.should have_raised Visiflow::WorkflowError }
-    end
-
+  describe 'recurse' do
     context "when all steps' results are success" do
-      When(:ran_workflow) { workflow.run }
+      When(:ran_workflow) { workflow.recurse }
       Then { workflow.execution_path.should =~ [:step1, :step2, :step3] }
       And  { workflow.should be_succeeded }
       And  { ran_workflow.should eq(workflow) }
     end
 
     context 'when a step fails' do
-      When { workflow.run(:step_that_fails) }
+      When { workflow.recurse(:step_that_fails) }
 
       it 'the expected flow should include the passed spec and failed one' do
         workflow.execution_path.should =~ [:step_that_fails, :fail_handler]
@@ -62,7 +57,7 @@ describe Visiflow::Workflow do
     end
 
     context 'when the initial step is not the first one' do
-      When { workflow.run(:step2) }
+      When { workflow.recurse(:step2) }
       Then { workflow.execution_path.should =~ [:step2, :step3] } # skip step1
     end
   end
@@ -78,7 +73,7 @@ describe Visiflow::Workflow do
     Given(:workflow) { DelayableWorkflow.new }
     Given { DelayableWorkflow.stub(:perform_async) }
 
-    When(:response) { workflow.run }
+    When(:response) { workflow.recurse }
 
     Then do
       # persisted visiflow context
@@ -88,7 +83,7 @@ describe Visiflow::Workflow do
               something_persisted: 'in_process',
               last_step: workflow.last_step,
               last_result: workflow.last_result,
-              initial_step: :process_one,
+              initial_step: nil,
               is_backgrounded: false)
     end
   end

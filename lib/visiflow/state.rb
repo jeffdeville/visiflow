@@ -18,6 +18,14 @@ module Visiflow
       last_result.message
     end
 
+    def next_step
+      context.next_step
+    end
+
+    def next_step=(value)
+      context.next_step = value
+    end
+
     def last_step
       context.last_step
     end

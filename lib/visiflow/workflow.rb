@@ -30,7 +30,7 @@ module Visiflow::Workflow
     end
 
     def run(initial_values = {})
-      new(initial_values).run
+      new(initial_values).recurse
     end
   end
 
@@ -73,27 +73,19 @@ module Visiflow::Workflow
     end
   end
 
-  def run(starting_step = processed_steps.keys.first)
-    context.next_step = determine_first_step(starting_step)
-    context.initial_step = context.next_step.name
-    while context.next_step
-      context.last_result = execute_step context.next_step
-      context.last_step = context.next_step
-      next_step_name =
-        determine_next_step_name(context.last_result, context.last_step)
-      context.next_step = processed_steps[handle_delayed_step(next_step_name)]
-    end
+  # ##########################
+  def recurse(
+    step = processed_steps[processed_steps.keys.first]
+  )
+    step = step.is_a?(Symbol) ? processed_steps[step] : step
+    return self unless step
 
-    self
-  end
+    self.next_step = step
+    self.last_result = execute_step next_step
 
-  def determine_first_step(starting_step)
-    next_step = processed_steps[starting_step]
-    unless next_step
-      fail Visiflow::WorkflowError, starting_step,
-           "Could not find step: #{starting_step} in #{processed_steps.keys}"
-    end
-    next_step
+    self.last_step = next_step
+    recurse(processed_steps[handle_delayed_step(determine_next_step_name)])
+
   end
 
   def assert_all_steps_defined
@@ -124,7 +116,7 @@ module Visiflow::Workflow
 
     context_attributes = context.attributes.reject { |k, _| k == :next_step }
     if @run_synchronously
-      run(undelay(step_name))
+      recurse(undelay(step_name))
     else
       self.class.perform_async undelay(step_name), context_attributes
     end
@@ -143,20 +135,20 @@ module Visiflow::Workflow
   #      are separate concerns.
   # rubocop:disable CyclomaticComplexity
   # rubocop:disable MethodLength
-  def determine_next_step_name(response, current_step)
-    unless response.is_a? Visiflow::Response
+  def determine_next_step_name
+    unless last_result.is_a? Visiflow::Response
       fail "#{current_step.name} did not return a Visiflow::Response"
     end
 
     next_step_symbol =
     case
-    when current_step.key?(response.status)
-      current_step[response.status]
-    when response.success? || response.failure?
+    when last_step.key?(last_result.status)
+      last_step[last_result.status]
+    when last_result.success? || last_result.failure?
       # It's ok to end on a success or failure response
       STOP
     else
-      msg = "#{current_step.name} returned: #{response.status}, " \
+      msg = "#{last_step.name} returned: #{last_result.status}, " \
         "but we can't find that outcome's step"
       fail ArgumentError, msg
     end
