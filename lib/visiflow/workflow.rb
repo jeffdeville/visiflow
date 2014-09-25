@@ -73,7 +73,6 @@ module Visiflow::Workflow
     end
   end
 
-  # ##########################
   def recurse(
     step = processed_steps[processed_steps.keys.first]
   )
@@ -87,7 +86,6 @@ module Visiflow::Workflow
 
     self.last_step = next_step
     recurse(processed_steps[handle_delayed_step(determine_next_step_name)])
-
   end
 
   def assert_all_steps_defined
@@ -141,8 +139,6 @@ module Visiflow::Workflow
   #      one is executed. It's used when you have several things that should
   #      all run, but you don't want them in the same method because they
   #      are separate concerns.
-  # rubocop:disable CyclomaticComplexity
-  # rubocop:disable MethodLength
   def determine_next_step_name
     case
     when last_step.key?(last_result.status) then last_step[last_result.status]
