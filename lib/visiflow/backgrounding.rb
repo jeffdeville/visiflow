@@ -12,34 +12,26 @@ module Visiflow
       context.is_backgrounded
     end
 
-    # code that is recurse when the workflow 'wakes up'. Can be used to recurse
+    # code that is run when the workflow 'wakes up'. Can be used to run
     # any step in a workflow, based on the 'step_name' provided
     def perform(step_name, env)
       context.attributes = env
       context.initial_step = step_name.to_sym
       context.is_backgrounded = true
-      recurse step_name.to_sym
+      run step_name.to_sym
     end
 
     def self.perform_async(step_after_wake, attributes)
       fail "This method should invoke your background job runner"
     end
+
     def perform_async(step_after_wake, attributes)
       fail "You should implement this in a class method on your workflow"
     end
 
-    # If you have an async job that you'd like to recurse synchronously, you can
-    # recurse it this way
     def run_synchronously
       @run_synchronously = true
-      until succeeded?
-        if context.next_step
-          recurse(context.next_step.name)
-        else
-          recurse
-        end
-      end
-      self
+      next_step ? run(next_step) : run until succeeded?
     end
 
     private
@@ -49,7 +41,7 @@ module Visiflow
 
       context_attributes = context.attributes.reject { |k, _| k == :next_step }
       if @run_synchronously
-        recurse(undelay(step_name))
+        run(undelay(step_name))
       else
         self.class.perform_async undelay(step_name), context_attributes
       end

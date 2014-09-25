@@ -30,7 +30,7 @@ module Visiflow::Workflow
     end
 
     def run(initial_values = {})
-      new(initial_values).recurse
+      new(initial_values).run
     end
   end
 
@@ -73,7 +73,7 @@ module Visiflow::Workflow
     end
   end
 
-  def recurse(
+  def run(
     step = processed_steps[processed_steps.keys.first]
   )
     step = step.is_a?(Symbol) ? processed_steps[step] : step
@@ -85,7 +85,7 @@ module Visiflow::Workflow
     assert_valid_last_result
 
     self.last_step = next_step
-    recurse(processed_steps[handle_delayed_step(determine_next_step_name)])
+    run(processed_steps[handle_delayed_step(determine_next_step_name)])
   end
 
   def assert_all_steps_defined
@@ -116,7 +116,7 @@ module Visiflow::Workflow
 
     context_attributes = context.attributes.reject { |k, _| k == :next_step }
     if @run_synchronously
-      recurse(undelay(step_name))
+      run(undelay(step_name))
     else
       self.class.perform_async undelay(step_name), context_attributes
     end

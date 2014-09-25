@@ -36,16 +36,16 @@ describe Visiflow::Workflow do
     end
   end
 
-  describe 'recurse' do
+  describe 'run' do
     context "when all steps' results are success" do
-      When(:ran_workflow) { workflow.recurse }
+      When(:ran_workflow) { workflow.run }
       Then { workflow.execution_path.should =~ [:step1, :step2, :step3] }
       And  { workflow.should be_succeeded }
       And  { ran_workflow.should eq(workflow) }
     end
 
     context 'when a step fails' do
-      When { workflow.recurse(:step_that_fails) }
+      When { workflow.run(:step_that_fails) }
 
       it 'the expected flow should include the passed spec and failed one' do
         workflow.execution_path.should =~ [:step_that_fails, :fail_handler]
@@ -57,7 +57,7 @@ describe Visiflow::Workflow do
     end
 
     context 'when the initial step is not the first one' do
-      When { workflow.recurse(:step2) }
+      When { workflow.run(:step2) }
       Then { workflow.execution_path.should =~ [:step2, :step3] } # skip step1
     end
   end
@@ -73,7 +73,7 @@ describe Visiflow::Workflow do
     Given(:workflow) { DelayableWorkflow.new }
     Given { DelayableWorkflow.stub(:perform_async) }
 
-    When(:response) { workflow.recurse }
+    When(:response) { workflow.run }
 
     Then do
       # persisted visiflow context
@@ -103,5 +103,17 @@ describe Visiflow::Workflow do
     Given(:workflow) { DelayableWorkflow.new }
     When { workflow.run_synchronously }
     Then { workflow.last_step.name.should == :process_two }
+  end
+
+  describe '#perform_async' do
+    Given(:non_async_workflow) { TestWorkflow }
+    When(:result) { non_async_workflow.perform_async }
+    Then { result.should have_raised }
+  end
+
+  describe '.perform_async' do
+    Given(:non_async_workflow) { TestWorkflow.new }
+    When(:result) { non_async_workflow.perform_async }
+    Then { result.should have_raised }
   end
 end
