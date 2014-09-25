@@ -19,7 +19,7 @@ class Visiflow::Step
   end
 
   def to_s
-    name
+    name.to_s
   end
 
   def self.create_steps(steps_array)

@@ -7,6 +7,7 @@ describe Visiflow::Step do
       When(:step) { Visiflow::Step.new(step_input) }
       Then  { step.name == :complete }
       And  { step.step_map.length.should == 0 }
+      And  { step.to_s == "complete" }
     end
     context "when initializing an intermediate state (indicated by a hash)" do
       Given(:step_input) do
