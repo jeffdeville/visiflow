@@ -131,14 +131,9 @@ module Visiflow::Workflow
   end
 
   # There are a few 'special' response statuses, and they behave like this:
-  #   :success - If success is returned, and there is nothing to go on to,
-  #      the process will simply stop. Assumption is that we are at the end
-  #      of the flow.
-  #   :no_matter_what - This response has to be by itself. It's there so
-  #      that come hell or high water, the next step following this
-  #      one is executed. It's used when you have several things that should
-  #      all run, but you don't want them in the same method because they
-  #      are separate concerns.
+  # :success/:failure - If success or failure are returned, and there is nothing
+  # to go on to, the process will simply stop. Assumption is that we are at
+  # the end of the flow.
   def determine_next_step_name
     case
     when last_step.key?(last_result.status) then last_step[last_result.status]
