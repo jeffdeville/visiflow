@@ -1,4 +1,6 @@
 # Visiflow
+[![Code Climate](https://codeclimate.com/github/jeffdeville/visiflow/badges/gpa.svg)](https://codeclimate.com/github/jeffdeville/visiflow)
+[![Test Coverage](https://codeclimate.com/github/jeffdeville/visiflow/badges/coverage.svg)](https://codeclimate.com/github/jeffdeville/visiflow)
 
 Let's start with what Workflows are not.  They are not state machines.  A state machine allows your class to take certain actions based on it's internal state. But those changes are driven by external factors.  Any sequence of 'transitions' is incidental, and driven by whatever is controlling your class with the state machine.  
 
