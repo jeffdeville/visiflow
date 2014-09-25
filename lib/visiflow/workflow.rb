@@ -83,6 +83,8 @@ module Visiflow::Workflow
     self.next_step = step
     self.last_result = execute_step next_step
 
+    assert_valid_last_result
+
     self.last_step = next_step
     recurse(processed_steps[handle_delayed_step(determine_next_step_name)])
 
@@ -124,6 +126,12 @@ module Visiflow::Workflow
     STOP
   end
 
+  def assert_valid_last_result
+    unless last_result.is_a? Visiflow::Response
+      fail "#{current_step.name} did not return a Visiflow::Response"
+    end
+  end
+
   # There are a few 'special' response statuses, and they behave like this:
   #   :success - If success is returned, and there is nothing to go on to,
   #      the process will simply stop. Assumption is that we are at the end
@@ -136,24 +144,13 @@ module Visiflow::Workflow
   # rubocop:disable CyclomaticComplexity
   # rubocop:disable MethodLength
   def determine_next_step_name
-    unless last_result.is_a? Visiflow::Response
-      fail "#{current_step.name} did not return a Visiflow::Response"
-    end
-
-    next_step_symbol =
     case
-    when last_step.key?(last_result.status)
-      last_step[last_result.status]
-    when last_result.success? || last_result.failure?
-      # It's ok to end on a success or failure response
-      STOP
+    when last_step.key?(last_result.status) then last_step[last_result.status]
+    when last_result.success? || last_result.failure? then STOP
     else
-      msg = "#{last_step.name} returned: #{last_result.status}, " \
+      fail ArgumentError, "#{last_step.name} returned: #{last_result.status}, " \
         "but we can't find that outcome's step"
-      fail ArgumentError, msg
     end
-
-    next_step_symbol || STOP
   end
 
   def get_step_params(step_name)
