@@ -8,34 +8,6 @@ describe Visiflow::Workflow do
     Then  { result.is_a? TestWorkflow }
   end
 
-  describe 'before_step' do
-    context 'when a before_step is defined' do
-      When(:response) { workflow.before_step(:step1) }
-      Then { workflow.before_step1_called.should be true }
-    end
-
-    context 'when a before_step is NOT defined' do
-      When(:response) { workflow.before_step(:step2) }
-      Then { response == true } # to prevent canceling the workflow
-    end
-  end
-
-  describe 'after_step' do
-    context 'when a after_step is defined' do
-      When(:response) do
-        workflow.after_step(:step1, Visiflow::Response.success)
-      end
-      Then { workflow.after_step1_called.should be true }
-    end
-
-    context 'when a after_step is NOT defined' do
-      When(:response) do
-        workflow.after_step(:step2, Visiflow::Response.success)
-      end
-      Then { response.success? } # to prevent canceling the workflow
-    end
-  end
-
   describe 'run' do
     context "when all steps' results are success" do
       When(:ran_workflow) { workflow.run }

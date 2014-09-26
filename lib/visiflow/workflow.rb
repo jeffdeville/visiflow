@@ -42,18 +42,6 @@ module Visiflow::Workflow
     assert_all_steps_defined
   end
 
-  def before_step(step)
-    method_name = "before_#{step}"
-    return send(method_name) if respond_to? method_name
-    true
-  end
-
-  def after_step(step, result)
-    method_name = "after_#{step}"
-    return send(method_name, result) if respond_to? method_name
-    result
-  end
-
   def around_step(_step_name)
     yield
   end
@@ -64,12 +52,10 @@ module Visiflow::Workflow
 
     # probably should pass in the args to the around and before steps as well.
     around_step(step.name) do
-      if before_step(step.name)
-        result = send(step.name, *args)
-        fail BAD_STEP_RESPONSE unless result.is_a? Visiflow::Response
-        update_context(result.values)
-        after_step(step.name, result)
-      end
+      result = send(step.name, *args)
+      fail BAD_STEP_RESPONSE unless result.is_a? Visiflow::Response
+      update_context(result.values)
+      result
     end
   end
 
