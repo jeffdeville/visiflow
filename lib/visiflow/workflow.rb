@@ -95,14 +95,17 @@ module Visiflow::Workflow
     end
   end
 
-  def undefined_steps
-    results = processed_steps.values.map do |step|
-      [step.name] + step.step_map.values.map do |value|
-        value && value.to_s.split('__').last.to_sym
-      end
-    end
 
-    results.flatten.uniq.compact.select { |step| !respond_to?(step) }
+  def undefined_steps
+    step_names.select { |step| !respond_to?(step) }
+  end
+
+  def step_names
+    steps = processed_steps.values.map { |step| step.name }
+    next_steps = processed_steps.values.map { |step|
+      step.step_map.values.compact.map { |s| undelay(s) }
+    }.flatten
+    (steps + next_steps).uniq
   end
 
   def required
