@@ -5,7 +5,7 @@ namespace :workflow do
     path = args[:path] || 'tmp'
 
     file_path = create_workflow_diagram(
-      class_name,
+      class_name.gsub("::", ""),
       Visiflow::Step.create_steps(class_name.constantize.steps),
       path)
     `open #{file_path}`
@@ -30,7 +30,7 @@ digraph #{workflow_name} {
 
       outcomes.step_map.each_pair do |response, next_step|
         file.puts %(          "#{normalized_step}" -> "#{normalize_step(next_step)}" \
-                  " [label="#{normalize_step(response)}"];        )
+                  [label="#{normalize_step(response)}"];        )
       end
     end
     file.puts '}'
