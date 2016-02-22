@@ -88,4 +88,10 @@ describe Visiflow::Workflow do
     When(:result) { non_async_workflow.perform_async }
     Then { result.should have_raised }
   end
+
+  describe 'context generation' do
+    Given(:inherited_workflow) { InheritedWorkflow.new(a_thing: "thing1") }
+    When(:result) { inherited_workflow.run }
+    Then { expect(result).to_not have_raised() }
+  end
 end
