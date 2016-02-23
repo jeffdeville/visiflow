@@ -35,8 +35,13 @@ module Visiflow::Workflow
   end
 
   def initialize(initial_values = {})
-    context_class = self.class.context_class || Visiflow::BaseContext
+    klass = self.class
+    while klass.respond_to?(:context_class)
+      break if klass.context_class
+      klass = klass.superclass
+    end
 
+    context_class = klass.respond_to?(:context_class) ? klass.context_class : Visiflow::BaseContext
     self.context = context_class.new(initial_values)
     self.processed_steps = Visiflow::Step.create_steps(Array(self.class.steps))
     assert_all_steps_defined
